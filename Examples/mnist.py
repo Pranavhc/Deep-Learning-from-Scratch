@@ -30,9 +30,9 @@ x_test, y_test = preprocess_data(x_test, y_test, 20)
 # neural network
 network = [
     Dense(28 * 28, 40),
-    Tanh(),
+    Sigmoid(),
     Dense(40, 10),
-    Tanh()
+    Sigmoid()
 ]
 
 # train
