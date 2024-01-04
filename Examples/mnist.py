@@ -6,7 +6,7 @@ import sys
 sys.path.append('D:/Python/Deep Learning/Neural-Network')
 
 from dense import Dense
-from activation import Tanh
+from activation import Sigmoid
 from loss_fn import mse, mse_prime
 from network import train, predict
 
@@ -36,7 +36,7 @@ network = [
 ]
 
 # train
-train(network, mse, mse_prime, x_train, y_train, epochs=800, learning_rate=0.1)
+train(network, mse, mse_prime, x_train, y_train, epochs=2000, learning_rate=0.1)
 
 # test
 for x, y in zip(x_test, y_test):
