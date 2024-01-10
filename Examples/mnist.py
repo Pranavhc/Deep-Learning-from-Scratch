@@ -25,20 +25,26 @@ def preprocess_data(x, y, limit):
 # load MNIST from server
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train, y_train = preprocess_data(x_train, y_train, 1000)
-x_test, y_test = preprocess_data(x_test, y_test, 20)
+x_test, y_test = preprocess_data(x_test, y_test, 10)
 
 # neural network
 network = [
     Dense(28 * 28, 40),
     Sigmoid(),
-    Dense(40, 10),
+    Dense(40, 25),
+    Sigmoid(),
+    Dense(25, 10),
     Sigmoid()
 ]
 
-# train
-train(network, mse, mse_prime, x_train, y_train, epochs=2000, learning_rate=0.1)
+train(network, mse, mse_prime, x_train, y_train, epochs=200, learning_rate=0.1, verbose_interval=50)
 
-# test
-for x, y in zip(x_test, y_test):
-    output = predict(network, x)
-    print('pred:', np.argmax(output), '\ttrue:', np.argmax(y), '\t', np.argmax(output)==np.argmax(y))
+def calc_accuracy(x_test, y_test):
+    correct_count = 0
+
+    for x, y in zip(x_test, y_test):
+        if np.argmax(predict(network, x)) == np.argmax(y): 
+            correct_count += 1
+    return correct_count / len(y_test)
+    
+print("Accuracy: ", calc_accuracy(x_test, y_test))
