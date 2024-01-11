@@ -2,8 +2,8 @@ import numpy as np
 from keras.datasets import mnist
 from keras.src.utils.np_utils import to_categorical
 
-import sys
-sys.path.append('D:/Python/Deep Learning/Neural-Network')
+import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
+
 from dense import Dense
 from activation import Sigmoid
 from loss_fn import mse, mse_prime
