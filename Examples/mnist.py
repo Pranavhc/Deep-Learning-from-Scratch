@@ -21,7 +21,7 @@ def preprocess_data(x, y, limit):
 
 # load MNIST from keras datasets server
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train, y_train = preprocess_data(x_train, y_train, 10000) # decrement samples for quicker training
+x_train, y_train = preprocess_data(x_train, y_train, 10000) # decrement sample count for quicker training
 x_test, y_test = preprocess_data(x_test, y_test, 100)
 
 # neural network
@@ -49,4 +49,4 @@ def calc_accuracy(x_test, y_test):
     
 print(f"Accuracy: {calc_accuracy(x_test, y_test)}%" ) 
 
-# best I could was 91% accuracy w/ minimal hyperparameter experimentation. (epochs=300, alpha=0.2, training_samples=10000 , layers=8)
+# best I could get was 91% accuracy w/ minimal hyperparameter tuning. (epochs=300, alpha=0.2, training_samples=10000 , layers=8)
