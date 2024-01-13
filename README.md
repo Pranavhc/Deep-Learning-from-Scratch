@@ -12,3 +12,4 @@
 5. Dropout & Batch Normalization
 6. More Activation and Loss functions
 7. Optimizers
+8. Add better comments and explanations
