@@ -1,26 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-import sys
-sys.path.append('D:/Python/Deep Learning/Neural-Network')
+import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
 
 from dense import Dense
-from activation import Sigmoid, ReLu
+from activation import Sigmoid
 from loss_fn import mse, mse_prime
 from network import train, predict
+from regularization import Regularization
 
 X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
 Y = np.reshape([[0], [1], [1], [0]], (4, 1, 1))
 
 network = [
-    Dense(2, 3),
-    ReLu(),
-    Dense(3, 1),
-    Sigmoid()
+    Dense(2, 3, regularization=Regularization("L2", 0.0001)),
+    Sigmoid(),
+    Dense(3, 2, regularization=Regularization("L2", 0.0001)),
+    Sigmoid(),
+    Dense(2, 1, regularization=Regularization("L2", 0.0001)),
+    Sigmoid()  
 ]
 
-train(network, mse, mse_prime, X, Y, epochs=1000, learning_rate=0.1, verbose_interval=100)
+train(network, mse, mse_prime, X, Y, epochs=10000, learning_rate=0.5, verbose_interval=100)
 
 # decision boundary plot
 points = []

@@ -8,6 +8,7 @@ from dense import Dense
 from activation import Sigmoid
 from loss_fn import mse, mse_prime
 from network import train, predict
+from regularization import Regularization
 
 def preprocess_data(x, y, limit):
     # reshape and normalize input data
@@ -21,18 +22,18 @@ def preprocess_data(x, y, limit):
 
 # load MNIST from keras datasets server
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train, y_train = preprocess_data(x_train, y_train, 10000) # decrement sample count for quicker training
+x_train, y_train = preprocess_data(x_train, y_train, 2000) # decrement sample count for quicker training
 x_test, y_test = preprocess_data(x_test, y_test, 100)
 
 # neural network
 network = [
-    Dense(28 * 28, 80),
+    Dense(28 * 28, 80, regularization=Regularization("L2", 0.01)),
     Sigmoid(),
-    Dense(80, 40),
+    Dense(80, 40, regularization=Regularization("L2", 0.001)),
     Sigmoid(),
-    Dense(40, 25),
+    Dense(40, 25, regularization=Regularization("L2", 0.001)),
     Sigmoid(),
-    Dense(25, 10),
+    Dense(25, 10, regularization=Regularization("L2", 0.001)),
     Sigmoid()
 ]
 
@@ -49,4 +50,4 @@ def calc_accuracy(x_test, y_test):
     
 print(f"Accuracy: {calc_accuracy(x_test, y_test)}%" ) 
 
-# best I could get was 91% accuracy w/ minimal hyperparameter tuning. (epochs=300, alpha=0.2, training_samples=10000 , layers=8)
+# best I could get was 91% accuracy w/ minimal hyperparameter tuning. (epochs=300, alpha=0.2, training_samples=10000 , layers=8, no regularization)
