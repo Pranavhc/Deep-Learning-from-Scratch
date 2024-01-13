@@ -1,10 +1,10 @@
-### Implemented!
+### Implemented
 1. Dense Layer
 2. Activation functions - Sigmoid, ReLu, Tanh
 3. Loss function - Mean Squared Error
 4. Regularization - L1, L2
 
-### todo!
+### Todo
 1. Batch Processing
 2. Cross-validation
 3. Early Stopping
