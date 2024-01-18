@@ -48,7 +48,6 @@ network = [
 
 train(network, mse, mse_prime, x_train, y_train, epochs=150, learning_rate=0.2, verbose_interval=10) # experiment with these couple of hyperparameters
 
-# accuracy = actual / pred * 100
 def calc_accuracy(x_test, y_test):
     correct_count = 0
     for x, y in zip(x_test, y_test):
