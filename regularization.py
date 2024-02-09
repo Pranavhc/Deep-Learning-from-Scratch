@@ -15,3 +15,11 @@ class Regularization():
         if self.norm == "L1":
             return self.L1(weights)
         return self.L2(weights)
+
+# Regularization Terms -
+# L1 = lamda * sum(|W|)
+# L2 = lambda * Sum(W^2)
+
+# Derivative w.r.t W -
+# L1 = lambda * sign(W)
+# L2 = 2 * lambda * W
