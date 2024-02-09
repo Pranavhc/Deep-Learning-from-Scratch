@@ -1,12 +1,14 @@
 import numpy as np
 from keras.datasets import mnist
+import matplotlib.pyplot as plt
 
 import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
 
 from dense import Dense
 from activation import Sigmoid
 from loss_fn import mse, mse_prime
-from network import train, predict
+from network import NeuralNetwork
+
 
 def one_hot_encode(y: np.ndarray) -> np.ndarray:
     encoded = np.zeros((y.shape[0], 10))    
@@ -35,7 +37,7 @@ x_train, y_train = preprocess_data(x_train, y_train, 4000) # using only 4k/60k s
 x_test, y_test = preprocess_data(x_test, y_test, 100) 
 
 # neural network
-network = [
+network = NeuralNetwork([
     Dense(28 * 28, 80, regularization=None), 
     Sigmoid(),  
     Dense(80, 40),  
@@ -44,20 +46,39 @@ network = [
     Sigmoid(),
     Dense(25, 10),
     Sigmoid()
-]
+])
 
-train(network, mse, mse_prime, x_train, y_train, epochs=150, learning_rate=0.2, verbose_interval=10) # experiment with these couple of hyperparameters
+network.train(mse, mse_prime, x_train, y_train, epochs=150, learning_rate=0.2, verbose_interval=10) # experiment with these couple of hyperparameters
 
 def calc_accuracy(x_test, y_test):
     correct_count = 0
     for x, y in zip(x_test, y_test):
-        if np.argmax(predict(network, x)) == np.argmax(y): 
+        if np.argmax(network.predict(x)) == np.argmax(y): 
             correct_count += 1
     return (correct_count / len(y_test)) * 100
     
-print(f"Accuracy: {calc_accuracy(x_test, y_test)}%" ) 
+print(f"\nAccuracy: {calc_accuracy(x_test, y_test)}%" ) 
 
+def plot_images_with_predictions():
+    fig = plt.figure(figsize=(8, 5))  # figure size in inches
+    
+    for i in range(50): 
+        plt.subplot(5, 10, i+1)  # arrange the plots in a 5x10 grid
+        plt.xticks([]); plt.yticks([])  # remove markings
+        
+        img = x_test[i].reshape((28, 28))
+        plt.imshow(img, cmap=plt.cm.binary)
+        
+        predicted_label = np.argmax(network.predict(x_test[i]))
+        true_label = np.argmax(y_test[i])
+        
+        color = 'green' if predicted_label == true_label else 'red'
+        
+        plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  # set the label below the image
+    plt.show()
 
+plot_images_with_predictions()
 # --------------------------------------------------------------------------------
 # accuracy = ~91% (hyperparameters being e=300, a=0.2, samples=10000, layers=8, no regularization)
-# best accuracy with current hyperparameters: ~88%
+# best accuracy with current hyperparameters: ~90%
+
