@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
 
 from dense import Dense
-from activation import Sigmoid
-from loss_fn import mse, mse_prime
+from activation import Sigmoid, Softmax, ReLu
+from loss_fn import CrossEntropy
 from network import NeuralNetwork
+from regularization import Regularization
 
 
 def one_hot_encode(y: np.ndarray) -> np.ndarray:
@@ -34,21 +35,21 @@ def preprocess_data(x, y, limit):
 (x_train, y_train), (x_test, y_test) = mnist.load_data() 
 
 x_train, y_train = preprocess_data(x_train, y_train, 4000) # using only 4k/60k samples for faster training
-x_test, y_test = preprocess_data(x_test, y_test, 100) 
+x_test, y_test = preprocess_data(x_test, y_test, 1000) 
 
 # neural network
 network = NeuralNetwork([
-    Dense(28 * 28, 80, regularization=None), 
+    Dense(28 * 28, 80, regularization=Regularization('l2', 0.0001)), 
     Sigmoid(),  
-    Dense(80, 40),  
+    Dense(80, 40, regularization=Regularization('l2', 0.0001)),  
     Sigmoid(),
-    Dense(40, 25),
+    Dense(40, 25, regularization=Regularization('l2', 0.00001)),
     Sigmoid(),
-    Dense(25, 10),
-    Sigmoid()
+    Dense(25, 10, regularization=None),
+    Softmax()
 ])
 
-network.train(mse, mse_prime, x_train, y_train, epochs=150, learning_rate=0.2, verbose_interval=10) # experiment with these couple of hyperparameters
+network.train(CrossEntropy(), x_train, y_train, epochs=180, learning_rate=0.1, verbose_interval=10) # experiment with these couple of hyperparameters
 
 def calc_accuracy(x_test, y_test):
     correct_count = 0
