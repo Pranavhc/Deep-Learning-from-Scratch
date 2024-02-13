@@ -6,7 +6,7 @@ import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore t
 from network import NeuralNetwork
 from dense import Dense
 from activation import Sigmoid, ReLu
-from loss_fn import mse, mse_prime
+from loss_fn import MSE
 
 
 X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
@@ -21,7 +21,7 @@ network = NeuralNetwork([
     Sigmoid()
 ])
 
-network.train(mse, mse_prime, X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
+network.train(MSE(), X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
 
 def decision_boundary():
     points = []
