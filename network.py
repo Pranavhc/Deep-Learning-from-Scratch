@@ -1,5 +1,6 @@
 from typing import List
 from layer import Layer
+from loss_fn import Loss
 
 class NeuralNetwork:
     def __init__(self, layers: List[Layer]) -> None:
@@ -11,7 +12,7 @@ class NeuralNetwork:
             output = layer.forward(output)
         return output
 
-    def train(self, loss, loss_prime, x_train, y_train, epochs=1000, learning_rate=0.1, verbose=True, verbose_interval=100):
+    def train(self, loss: Loss, x_train, y_train, epochs=1000, learning_rate=0.1, verbose=True, verbose_interval=100):
         for e in range(epochs+1):
             error = 0
             for x, y in zip(x_train, y_train):
@@ -22,7 +23,7 @@ class NeuralNetwork:
                 error += loss(y, output)
 
                 #backward
-                grad = loss_prime(y, output)
+                grad = loss.prime(y, output)
                 for layer in reversed(self.layers):
                     grad = layer.backward(grad, learning_rate)
 
@@ -30,4 +31,4 @@ class NeuralNetwork:
             
             if verbose and e % verbose_interval == 0:
                 print(f"{e}/{epochs} error = {error}")
-
+            
