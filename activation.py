@@ -43,3 +43,15 @@ class Tanh(Activation):
             return 1 - np.tanh(x) ** 2
 
         super().__init__(tanh, tanh_prime)
+
+# Softmax requires a different approach 
+class Softmax(Layer):
+    def forward(self, input):
+        exp_z = np.exp(input)
+        self.output = exp_z / np.sum(exp_z)
+        return self.output
+    
+        
+    def backward(self, output_gradient, learning_rate):
+        n = np.size(self.output)
+        return np.dot((np.identity(n) - self.output.T) * self.output, output_gradient)
