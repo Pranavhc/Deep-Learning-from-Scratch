@@ -1,7 +1,7 @@
 ### Implemented
 1. Dense Layer
-2. Activation functions - Sigmoid, ReLu, Tanh
-3. Loss function - Mean Squared Error
+2. Activation functions - Sigmoid, ReLu, Tanh, Softmax
+3. Loss functions - Mean Squared Error, Catogorical Cross Entropy
 4. Regularization - L1, L2
 
 ### Todo
@@ -9,7 +9,4 @@
 2. Cross-validation
 3. Early Stopping
 4. Convolutional Layer
-5. Dropout & Batch Normalization
-6. More Activation and Loss functions
-7. Optimizers
-8. Add better comments and explanations
+5. More Activation and Loss functions
