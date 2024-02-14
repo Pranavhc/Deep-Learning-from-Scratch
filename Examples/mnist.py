@@ -20,24 +20,24 @@ def one_hot_encode(y: np.ndarray) -> np.ndarray:
 def one_hot_encode1(y: np.ndarray) -> np.ndarray:
     return np.eye(10)[y]
 
-# reshape and normalize input data
+
 def preprocess_data(x, y, limit):
-    x = x[:, :limit].reshape(x.shape[0], 28 * 28, 1) # flattening 28x28 matrix to get a 784 vector
-    x = x.astype("float32") / 255 # now the data ranges between 0 and 1 (e.g. 0.5, 0.123, 0.882)
+    x = x.reshape(x.shape[0], 28 * 28, 1) # flattening 28x28 to a 784 vector
+    x = x.astype("float32") / 255 # normalization: data ranges between 0 and 1
     
-    # one-hot encoding (e.g. 3 = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0])
-    y = one_hot_encode1(y[:limit])  
+    y = one_hot_encode1(y[:limit])  # one-hot encoding
     y = y.reshape(y.shape[0], 10, 1) 
+    x = x[:limit,:]
     
+    print(x.shape, y.shape) # this didn't match before the bug fix
     return x, y
 
-# load MNIST from keras datasets server
+# load MNIST from keras datasets
 (x_train, y_train), (x_test, y_test) = mnist.load_data() 
 
-x_train, y_train = preprocess_data(x_train, y_train, 4000) # using only 4k/60k samples for faster training
+x_train, y_train = preprocess_data(x_train, y_train, 4000)
 x_test, y_test = preprocess_data(x_test, y_test, 1000) 
 
-# neural network
 network = NeuralNetwork([
     Dense(28 * 28, 80, regularization=Regularization('l2', 0.0001)), 
     Sigmoid(),  
@@ -49,7 +49,8 @@ network = NeuralNetwork([
     Softmax()
 ])
 
-network.train(CrossEntropy(), x_train, y_train, epochs=180, learning_rate=0.1, verbose_interval=10) # experiment with these couple of hyperparameters
+# experiment with hyperparameters
+network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10) 
 
 def calc_accuracy(x_test, y_test):
     correct_count = 0
@@ -74,12 +75,10 @@ def plot_images_with_predictions():
         true_label = np.argmax(y_test[i])
         
         color = 'green' if predicted_label == true_label else 'red'
-        
         plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  # set the label below the image
     plt.show()
 
 plot_images_with_predictions()
-# --------------------------------------------------------------------------------
-# accuracy = ~91% (hyperparameters being e=300, a=0.2, samples=10000, layers=8, no regularization)
-# best accuracy with current hyperparameters: ~90%
+
+# Accuracy with current hyperparameters: ~94%
 
