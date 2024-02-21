@@ -1,3 +1,5 @@
+!["This is how the model should look in code"](./Snap.png)
+
 ### Implemented
 1. Dense Layer
 2. Activation functions - Sigmoid, ReLu, Tanh, Softmax
