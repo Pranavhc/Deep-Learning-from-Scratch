@@ -1,7 +1,7 @@
 ### Implemented
 1. Dense Layer
 2. Activation functions - Sigmoid, ReLu, Tanh, Softmax
-3. Loss functions - Mean Squared Error, Catogorical Cross Entropy
+3. Loss functions - Mean Squared Error, Categorical Cross Entropy
 4. Regularization - L1, L2
 
 ### Todo
