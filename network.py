@@ -15,13 +15,14 @@ class NeuralNetwork:
     def train(self, loss: Loss, x_train, y_train, epochs=1000, learning_rate=0.1, verbose=True, verbose_interval=100):
         for e in range(epochs+1):
             error = 0
+            accuracy = 0
             for x, y in zip(x_train, y_train):
                 # forward
                 output = self.predict(x)
 
                 # error
                 error += loss(y, output)
-
+                accuracy += int(y.argmax() == output.argmax())
                 #backward
                 grad = loss.prime(y, output)
                 for layer in reversed(self.layers):
@@ -30,5 +31,5 @@ class NeuralNetwork:
             error /= len(x_train)
             
             if verbose and e % verbose_interval == 0:
-                print(f"{e}/{epochs} error = {error}")
+                print(f"{e}/{epochs} - error = {error} - accuracy = {accuracy/len(y_train)}")
             
