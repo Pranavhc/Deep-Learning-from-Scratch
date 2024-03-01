@@ -1,14 +1,10 @@
 !["This is how the model should look in code"](./Snap.png)
 
-### Implemented
-1. Dense Layer
-2. Activation functions - Sigmoid, ReLu, Tanh, Softmax
-3. Loss functions - Mean Squared Error, Categorical Cross Entropy
-4. Regularization - L1, L2
-
 ### Todo
 1. Batch Processing
 2. Cross-validation
 3. Early Stopping
 4. Convolutional Layer
 5. More Activation and Loss functions
+
+help your bro out in case you see this repository 🙏
