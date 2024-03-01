@@ -7,4 +7,4 @@
 4. Convolutional Layer
 5. More Activation and Loss functions
 
-help your bro out in case you see this repository 🙏
+help your bro out if you see this repository 🙏
