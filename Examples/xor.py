@@ -1,12 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
-
-from network import NeuralNetwork
-from dense import Dense
-from activation import Sigmoid, ReLu
-from loss_fn import MSE
+from ..network import NeuralNetwork
+from ..dense import Dense
+from ..activation import Sigmoid, ReLu
+from ..loss_fn import MSE
 
 
 X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))

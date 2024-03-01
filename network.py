@@ -1,6 +1,6 @@
 from typing import List
-from layer import Layer
-from loss_fn import Loss
+from .layer import Layer
+from .loss_fn import Loss
 
 class NeuralNetwork:
     def __init__(self, layers: List[Layer]) -> None:

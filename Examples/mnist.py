@@ -2,13 +2,12 @@ import numpy as np
 from keras.datasets import mnist
 import matplotlib.pyplot as plt
 
-import sys; sys.path.append('D:/Python/Deep Learning/Neural-Network') # ignore this
 
-from dense import Dense
-from activation import Sigmoid, Softmax, ReLu
-from loss_fn import CrossEntropy
-from network import NeuralNetwork
-from regularization import Regularization
+from ..dense import Dense
+from ..activation import Sigmoid, Softmax
+from ..loss_fn import CrossEntropy
+from ..network import NeuralNetwork
+from ..regularization import Regularization
 
 
 def one_hot_encode(y: np.ndarray) -> np.ndarray:
@@ -28,8 +27,7 @@ def preprocess_data(x, y, limit):
     y = one_hot_encode1(y[:limit])  # one-hot encoding
     y = y.reshape(y.shape[0], 10, 1) 
     x = x[:limit,:]
-    
-    print(x.shape, y.shape) # this didn't match before the bug fix
+
     return x, y
 
 # load MNIST from keras datasets

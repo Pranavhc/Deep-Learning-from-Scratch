@@ -1,5 +1,5 @@
-from layer import Layer
-from regularization import Regularization
+from .layer import Layer
+from .regularization import Regularization
 import numpy as np
 
 class Dense(Layer):
