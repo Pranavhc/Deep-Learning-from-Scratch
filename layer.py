@@ -5,9 +5,8 @@ class Layer:
         self.input = None
         self.output = None
 
-    def forward(self, input) -> np.ndarray:
-        pass
+    def forward(self, input: np.ndarray) -> np.ndarray:
+        pass # return the linear output
 
-    def backward(self, output_gradient, learning_rate) -> np.ndarray:
-        # update parameters and return the input gradient
-        pass
+    def backward(self, output_gradient: np.ndarray, learning_rate: float) -> np.ndarray:
+        pass # return the input gradient
