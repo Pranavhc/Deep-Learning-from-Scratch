@@ -1,58 +1,40 @@
 import numpy as np
 from .layer import Layer
 
+class ReLu(Layer):
+  def forward(self, input: np.ndarray) -> np.ndarray:
+    self.input = input
+    return np.maximum(0, self.input)
 
-class Activation(Layer):
-    def __init__(self, activation, activation_prime) -> None:
-        self.activation = activation
-        self.activation_prime = activation_prime
+  def backward(self, output_gradient: np.ndarray, lr: float) -> np.ndarray:
+    grad = np.where(self.input < 0, 0, 1)
+    return np.multiply(output_gradient, grad)
 
-    def forward(self, input):
+class Sigmoid(Layer):
+  def forward(self, input: np.ndarray) -> np.ndarray:
+    self.input = input
+    return 1/(1 + np.exp(-self.input))
+
+  def backward(self, output_gradient: np.ndarray, lr: float) -> np.ndarray:
+    sigmoid = self.forward(self.input)
+    grad = sigmoid * (1 - sigmoid)
+    return np.multiply(output_gradient, grad)
+
+class Tanhh(Layer):
+    def forward(self, input) -> np.ndarray:
         self.input = input
-        return self.activation(self.input)
+        return np.tanh(self.input)
     
-    def backward(self, output_gradient, learning_rate):
-        return np.multiply(output_gradient, self.activation_prime(self.input))
+    def backward(self, output_gradient: np.ndarray, lr: float) -> np.ndarray:
+        return output_gradient * (1 - np.tanh(self.input) ** 2)
 
-class ReLu(Activation):
-    def __init__(self) -> None:
-        def relu(x):
-            return np.maximum(0, x)
-        
-        def relu_prime(x):
-            return np.where(x < 0, 0, 1)
-        
-        super().__init__(relu, relu_prime)
-
-class Sigmoid(Activation):
-    def __init__(self) -> None:
-        def sigmoid(x):
-            return 1 / (1 + np.exp(-x))
-
-        def sigmoid_prime(x):
-            s = sigmoid(x)
-            return s * (1 - s)
-
-        super().__init__(sigmoid, sigmoid_prime)
-
-class Tanh(Activation):
-    def __init__(self) -> None:
-        def tanh(x):
-            return np.tanh(x)
-        
-        def tanh_prime(x):
-            return 1 - np.tanh(x) ** 2
-
-        super().__init__(tanh, tanh_prime)
-
-# Softmax requires a different approach 
 class Softmax(Layer):
-    def forward(self, input):
+    def forward(self, input) -> np.ndarray:
         exp_z = np.exp(input)
         self.output = exp_z / np.sum(exp_z)
         return self.output
     
         
-    def backward(self, output_gradient, learning_rate):
+    def backward(self, output_gradient: np.ndarray, lr: float) -> np.ndarray:
         n = np.size(self.output)
         return np.dot((np.identity(n) - self.output.T) * self.output, output_gradient)
