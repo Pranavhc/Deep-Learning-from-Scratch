@@ -21,6 +21,10 @@ network = NeuralNetwork([
 
 network.train(MSE(), X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
 
+network.save("xor.pkl")
+
+# network = NeuralNetwork([]).load("xor.pkl")
+
 def decision_boundary():
     points = []
     for x in np.linspace(0, 1, 20):

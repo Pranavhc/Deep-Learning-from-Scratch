@@ -48,7 +48,11 @@ network = NeuralNetwork([
 ])
 
 # experiment with hyperparameters
-network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10) 
+network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10)
+
+network.save("mnist.pkl")
+
+# network = NeuralNetwork([]).load("mnist.pkl")
 
 def calc_accuracy(x_test, y_test):
     correct_count = 0
