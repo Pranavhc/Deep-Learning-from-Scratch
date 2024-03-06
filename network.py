@@ -1,6 +1,7 @@
 from typing import List
 from .layer import Layer
 from .loss_fn import Loss
+import pickle
 
 class NeuralNetwork:
     def __init__(self, layers: List[Layer]) -> None:
@@ -30,4 +31,11 @@ class NeuralNetwork:
             
             if verbose and e % verbose_interval == 0:
                 print(f"{e}/{epochs} - error = {error}")
-            
+
+    def save(self, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    def load(self, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
