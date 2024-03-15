@@ -3,11 +3,11 @@ from keras.datasets import mnist
 import matplotlib.pyplot as plt
 
 
-from ..dense import Dense
-from ..activation import Sigmoid, Softmax
-from ..loss_fn import CrossEntropy
-from ..network import NeuralNetwork
-from ..regularization import Regularization
+from nn.dense import Dense
+from nn.activation import Sigmoid, Softmax
+from nn.loss_fn import CrossEntropy
+from nn.network import NeuralNetwork
+from nn.regularization import Regularization
 
 
 def one_hot_encode(y: np.ndarray) -> np.ndarray:
@@ -48,11 +48,10 @@ network = NeuralNetwork([
 ])
 
 # experiment with hyperparameters
-network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10)
+# network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10)
+# network.save("Examples/models/mnist.pkl")
 
-network.save("mnist.pkl")
-
-# network = NeuralNetwork([]).load("mnist.pkl")
+network = NeuralNetwork([]).load("Examples/models/mnist.pkl")
 
 def calc_accuracy(x_test, y_test):
     correct_count = 0

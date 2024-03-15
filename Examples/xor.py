@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..network import NeuralNetwork
-from ..dense import Dense
-from ..activation import Sigmoid, ReLu
-from ..loss_fn import MSE
+from nn.network import NeuralNetwork
+from nn.dense import Dense
+from nn.activation import Sigmoid, ReLu
+from nn.loss_fn import MSE
 
 
 X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
@@ -19,11 +19,10 @@ network = NeuralNetwork([
     Sigmoid()
 ])
 
-network.train(MSE(), X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
+# network.train(MSE(), X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
+# network.save("Examples/models/xor.pkl")
 
-network.save("xor.pkl")
-
-# network = NeuralNetwork([]).load("xor.pkl")
+network = NeuralNetwork([]).load("Examples/models/xor.pkl")
 
 def decision_boundary():
     points = []

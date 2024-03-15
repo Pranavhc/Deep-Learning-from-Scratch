@@ -2,7 +2,7 @@ import numpy as np
 from typing import Generator, Tuple
 
 # this doesn't work yet (this function works but not with the current implementation of the network)
-# i don't know how to feed a batch to the network, i'm running it all sorts of shape errors
+# i don't know how to feed a batch to the network, i'm running into all sorts of shape errors
 
 class DataLoader:
     def __init__(self, X: np.ndarray, y: np.ndarray, batch_size: int, shuffle: False):
