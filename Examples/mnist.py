@@ -37,17 +37,16 @@ x_train, y_train = preprocess_data(x_train, y_train, 4000)
 x_test, y_test = preprocess_data(x_test, y_test, 1000) 
 
 network = NeuralNetwork([
-    Dense(28 * 28, 80, regularization=Regularization('l2', 0.0001)), 
+    Dense(28 * 28, 80, Regularization('l2', 0.0001)), 
     Sigmoid(),  
-    Dense(80, 40, regularization=Regularization('l2', 0.0001)),  
+    Dense(80, 40, Regularization('l2', 0.0001)),  
     Sigmoid(),
-    Dense(40, 25, regularization=Regularization('l2', 0.00001)),
+    Dense(40, 25, Regularization('l2', 0.00001)),
     Sigmoid(),
-    Dense(25, 10, regularization=None),
+    Dense(25, 10),
     Softmax()
 ])
 
-# experiment with hyperparameters
 # network.train(CrossEntropy(), x_train, y_train, epochs=150, learning_rate=0.1, verbose_interval=10)
 # network.save("Examples/models/mnist.pkl")
 
@@ -66,7 +65,7 @@ def plot_images_with_predictions():
     fig = plt.figure(figsize=(8, 5))  # figure size in inches
     
     for i in range(50): 
-        plt.subplot(5, 10, i+1)  # arrange the plots in a 5x10 grid
+        plt.subplot(5, 10, i+1)  
         plt.xticks([]); plt.yticks([])  # remove markings
         
         img = x_test[i].reshape((28, 28))
@@ -76,7 +75,7 @@ def plot_images_with_predictions():
         true_label = np.argmax(y_test[i])
         
         color = 'green' if predicted_label == true_label else 'red'
-        plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  # set the label below the image
+        plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  
     plt.show()
 
 plot_images_with_predictions()

@@ -11,11 +11,11 @@ X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
 Y = np.reshape([[0], [1], [1], [0]], (4, 1, 1))
 
 network = NeuralNetwork([
-    Dense(2, 6, regularization=None), 
+    Dense(2, 6), 
     ReLu(),  
-    Dense(6, 3, regularization=None),
+    Dense(6, 3),
     ReLu(),
-    Dense(3, 1, regularization=None),
+    Dense(3, 1),
     Sigmoid()
 ])
 
