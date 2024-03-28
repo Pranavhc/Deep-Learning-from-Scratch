@@ -2,6 +2,8 @@ import numpy as np
 
 class Regularization():
     def __init__(self, norm: str, lambda_: float ):
+        if norm not in ["L1", "L2"]: raise ValueError("Invalid norm!")
+        
         self.lambda_ = lambda_
         self.norm = norm
 
@@ -11,7 +13,7 @@ class Regularization():
     def L2(self, weights: np.ndarray) -> np.ndarray:
         return 2 * self.lambda_ * weights
 
-    def regularize(self, weights: np.ndarray) -> np.ndarray:
+    def __call__(self, weights: np.ndarray) -> np.ndarray:
         if self.norm == "L1":
             return self.L1(weights)
         return self.L2(weights)
