@@ -1,8 +1,5 @@
 import numpy as np
-from typing import Generator, Tuple
-
-# This doesn't work yet (the function works but not with the current implementation of the network)
-# I don't know how to feed a batch to the network, I'm running into all sorts of shape errors
+from typing import Generator
 
 class DataLoader:
     def __init__(self, X: np.ndarray, y: np.ndarray, batch_size: int, shuffle: False):
@@ -12,11 +9,20 @@ class DataLoader:
         self.shuffle = shuffle
         self.len = len(y)
     
-    def __call__(self) -> Generator[Tuple[np.ndarray, np.ndarray], None, None]:
-        assert(len(self.X) == len(self.y)), "X and y must have the same length!"
+    def __call__(self) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
+        if self.y is not None: assert(len(self.X) == len(self.y)), "X and y must have the same length!"
 
         idx = np.arange(self.len)
         if self.shuffle: idx = np.random.permutation(idx)
 
         for i in range(0, self.len, self.batch_size):
-            yield self.X[idx[i:i+self.batch_size]], self.y[idx[i:i+self.batch_size]]
+            if self.y is not None:
+                yield self.X[idx[i:i+self.batch_size]], self.y[idx[i:i+self.batch_size]]
+            else: 
+                yield self.X[idx[i:i+self.batch_size]]
+
+def to_categorical1D(x: np.ndarray, n_col:int=None) -> np.ndarray:
+    assert x.ndim == 1, "x should be 1-dimensional"
+
+    if not n_col: n_col = np.max(x) + 1
+    return np.eye(n_col)[x]
