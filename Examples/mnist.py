@@ -31,6 +31,7 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 
 n_samples, n_features = X_train.shape
 learning_rate: float = 0.01
+epochs=10
 momentum:float = 0.9
 batch_size:int = 128
 rglr: Regularization = Regularization('L2', 0.001)
@@ -54,14 +55,13 @@ clf = NeuralNetwork(SGD(momentum=momentum), CrossEntropy(), [
 train_loader = DataLoader(X_train, y_train, batch_size, shuffle=True)
 val_loader = DataLoader(X_val, y_val, batch_size, shuffle=True)
 
-history = clf.fit(train_loader, val_loader, epochs=10, verbose=True)
+history = clf.fit(train_loader, val_loader, epochs, verbose=True)
 
 
 ################# EVALUATE HOWEVER YOU LIKE
 
 def plot_loss():    
     train_loss, val_loss = history
-    print(len(train_loss), len(val_loss))
     history_df = pd.DataFrame({'train': train_loss, 'val': val_loss})
     history_df.plot(title="Loss")
     plt.xlabel("Epoch")
@@ -81,23 +81,23 @@ def calculate_accuracy():
 print(f"Accuracy: {calculate_accuracy()}%")
 
 
-# def plot_images_with_predictions():
-#     fig = plt.figure(figsize=(8, 5))  # figure size in inches
-    
-#     for i in range(50): 
-#         plt.subplot(5, 10, i+1)  
-#         plt.xticks([]); plt.yticks([])  # remove markings
+def plot_images_with_predictions():
+    fig = plt.figure(figsize=(8, 5)) 
+    start = 200 # see any 50 digits starting from this index
+    for i in range(start, start+50): 
+        plt.subplot(5, 10, (i-start)+1)  
+        plt.xticks([]); plt.yticks([])
         
-#         img = x_test[i].reshape((28, 28))
-#         plt.imshow(img, cmap=plt.cm.binary)
+        img = X_test[i].reshape((28, 28))
+        plt.imshow(img, cmap=plt.cm.binary)
         
-#         predicted_label = np.argmax(network.predict(x_test[i]))
-#         true_label = np.argmax(y_test[i])
+        predicted_label = np.argmax(clf.predict(X_test[i]))
+        true_label = np.argmax(y_test[i])
         
-#         color = 'green' if predicted_label == true_label else 'red'
-#         plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  
-#     plt.show()
-# plot_images_with_predictions()
+        color = 'green' if predicted_label == true_label else 'red'
+        plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  
+    plt.show()
+plot_images_with_predictions()
 
-# Accuracy with current hyperparameters: ~94%
+################# Accuracy with current hyperparameters: ~97%
 
