@@ -10,7 +10,7 @@ from nn.losses import CrossEntropy
 from nn.layers import Dense
 from nn.activations import ReLu, Softmax
 from nn.regularization import Regularization
-from nn.utils import to_categorical1D, DataLoader
+from nn.utils import DataLoader, to_categorical1D, save_object, load_object
 
 ################# PREPARE DATA 
 
@@ -58,8 +58,13 @@ val_loader = DataLoader(X_val, y_val, batch_size, shuffle=True)
 history = clf.fit(train_loader, val_loader, epochs, verbose=True)
 
 
-################# EVALUATE HOWEVER YOU LIKE
+################# SAVE THE MODEL
+save_object(clf, "Examples/models/mnist_clf.pkl")
 
+################# LOAD THE MODEL
+clf = load_object("Examples/models/mnist_clf.pkl")
+
+################# EVALUATE HOWEVER YOU LIKE
 def plot_loss():    
     train_loss, val_loss = history
     history_df = pd.DataFrame({'train': train_loss, 'val': val_loss})
@@ -83,7 +88,7 @@ print(f"Accuracy: {calculate_accuracy()}%")
 
 def plot_images_with_predictions():
     fig = plt.figure(figsize=(8, 5)) 
-    start = 200 # see any 50 digits starting from this index
+    start = 250 # see any 50 digits starting from this index
     for i in range(start, start+50): 
         plt.subplot(5, 10, (i-start)+1)  
         plt.xticks([]); plt.yticks([])
