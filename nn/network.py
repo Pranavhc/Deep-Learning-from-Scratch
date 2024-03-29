@@ -1,5 +1,4 @@
 import numpy as np
-import pickle
 
 from .layers import Layer
 from .losses import Loss
@@ -32,7 +31,7 @@ class NeuralNetwork:
     def _train_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
         y_pred = self._forward(X)
         loss = np.mean(self.loss(y, y_pred))
-        self._backward(self.loss.prime(y, y_pred))
+        self._backward(self.loss.grad(y, y_pred))
         return loss
     
     def _test_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -63,11 +62,3 @@ class NeuralNetwork:
                 else: print(f"{e}/{epochs}\t- train loss: {np.mean(self.error['train'][-1])}")
         
         return (self.error['train'], self.error['val'])
-
-    def save(self, filename):
-        with open(filename, 'wb') as f:
-            pickle.dump(self, f)
-
-    def load(self, filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)

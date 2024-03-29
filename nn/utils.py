@@ -1,10 +1,10 @@
 import numpy as np
+import pickle
 from typing import Generator
 
 class DataLoader:
-    def __init__(self, X: np.ndarray, y: np.ndarray, batch_size: int, shuffle: False):
-        self.X = X
-        self.y = y
+    def __init__(self, X: np.ndarray, y: np.ndarray, batch_size: int, shuffle:bool= False):
+        self.X, self.y = X, y
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.len = len(y)
@@ -26,3 +26,12 @@ def to_categorical1D(x: np.ndarray, n_col:int=None) -> np.ndarray:
 
     if not n_col: n_col = np.max(x) + 1
     return np.eye(n_col)[x]
+
+def save_object(model: object, filename):
+    with open(filename, 'wb') as f:
+        pickle.dump(model, f)
+
+def load_object(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
+
