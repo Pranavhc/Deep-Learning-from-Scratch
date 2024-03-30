@@ -5,8 +5,8 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 
 from nn.network import NeuralNetwork
-from nn.optim import SGD
-from nn.losses import CrossEntropy
+from nn.optim import StochasticGradientDescent as SGD
+from nn.losses import BinaryCrossEntropy as BCE
 from nn.layers import Dense
 from nn.activations import ReLu, Softmax
 from nn.regularization import Regularization
@@ -39,7 +39,7 @@ rglr: Regularization = Regularization('L2', 0.001)
 
 ################# DEFINE THE MODEL
 
-clf = NeuralNetwork(SGD(momentum=momentum), CrossEntropy(), [
+clf = NeuralNetwork(SGD(momentum=momentum), BCE(), [
     Dense(n_features, 128, rglr), 
     ReLu(),  
     Dense(128, 64, rglr),  
