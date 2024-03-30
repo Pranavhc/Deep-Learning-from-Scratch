@@ -47,8 +47,27 @@ class Dense(Layer):
         return np.dot(self.input, self.weights) + self.bias
     
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        """backward pass. Calculates grdients of loss wrt parameters and input of the layer.
-          Updates parameters. Applies regularization if given. Returns gradient of input of the layer."""
+        """ 
+        ## backward pass
+        1. Calculates grdients of loss wrt parameters and input of the layer.
+        2. Updates parameters. 
+        3. Applies regularization if given. 
+        4. Returns gradient of input of the layer.
+        
+        ### Mathematical description:
+        Backpropagation - the process of calculating the gradient of the loss function
+
+            if `∂L/∂y_hat = 2*(y_hat-y)/n` then
+
+            Gradient of Weights: `∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w = 2*(y_hat-y)/n * x`
+
+            Gradient of Bias: `∂L/∂b = ∂L/∂y_hat * ∂y_hat/∂b = 2*(y_hat-y)/n`
+
+            Gradient of Input: `∂L/∂x = ∂L/∂y_hat * ∂y_hat/∂x = 2*(y_hat-y)/n * w`
+
+        By chain rule, if we take the activation function into account, we are supposed to multiply its
+        derivative with the derivative of loss w.r.t to y_hat, I.e. `output_gradient = ∂L/∂y_hat * ∂A/∂y_hat`.
+        """
 
         # calculate gradients                                       # L = loss  Y = output  W = weights  X = input
         weights_gradient = np.dot(self.input.T, output_gradient)    # ∂L/dW = ∂L/dY * ∂Y/∂W = output_gradient * input
@@ -66,14 +85,3 @@ class Dense(Layer):
         
         return input_gradient
 
-
-
-# Backpropagation - the process of calculating the gradient of the loss function
-
-# if ∂L/∂y_hat = 2*(y_hat-y)/n then
-# ∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w = 2*(y_hat-y)/n * x
-# ∂L/∂b = ∂L/∂y_hat * ∂y_hat/∂b = 2*(y_hat-y)/n
-# ∂L/∂x = ∂L/∂y_hat * ∂y_hat/∂x = 2*(y_hat-y)/n * w
-
-# By chain rule, if we take activation into account, we are supposed to multiply the 
-# derivative of loss w.r.t to y_hat with the derivative of activation w.r.t to y_hat.
