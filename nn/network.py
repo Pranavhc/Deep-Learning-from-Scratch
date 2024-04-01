@@ -58,7 +58,7 @@ class NeuralNetwork:
                 self.error['val'].append(np.mean(val_batch_loss))
 
             if verbose:
-                if val_data: print(f"{e}/{epochs}\t- train loss: {self.error['train'][-1]}\t- val loss: {self.error['val'][-1]}")
-                else: print(f"{e}/{epochs}\t- train loss: {np.mean(self.error['train'][-1])}")
+                if val_data: print(f"{e}/{epochs}\t- loss: {self.error['train'][-1]:.4f}  -  val_loss: {self.error['val'][-1]:.4f}")
+                else: print(f"{e}/{epochs}\t- loss: {np.mean(self.error['train'][-1]):.4f}")
         
         return (self.error['train'], self.error['val'])
