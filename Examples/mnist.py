@@ -34,7 +34,9 @@ learning_rate: float = 0.01
 epochs=10
 momentum:float = 0.9
 batch_size:int = 128
-rglr: Regularization = Regularization('L2', 0.001)
+rglr= Regularization('L2', 0.01)
+rglr1= Regularization('L2', 0.01)
+rglr2= Regularization('L2', 0.01)
 
 
 ################# DEFINE THE MODEL
@@ -42,9 +44,9 @@ rglr: Regularization = Regularization('L2', 0.001)
 clf = NeuralNetwork(SGD(momentum=momentum), BCE(), [
     Dense(n_features, 128, rglr), 
     ReLu(),  
-    Dense(128, 64, rglr),  
+    Dense(128, 64, rglr1),  
     ReLu(),
-    Dense(64, 32, rglr),
+    Dense(64, 32, rglr2),
     ReLu(),
     Dense(32, 10),
     Softmax()
