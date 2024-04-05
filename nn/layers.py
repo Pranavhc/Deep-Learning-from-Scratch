@@ -6,7 +6,7 @@ from .regularization import Regularization
 
 class Layer:
     """The interface that each layer should implement."""
-    def forward(self, input: np.ndarray) -> np.ndarray:
+    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
         """forward pass. Returns the output of the layer."""
         raise NotImplementedError
 
@@ -41,7 +41,7 @@ class Dense(Layer):
         self.W_opt = copy.copy(optimizer) 
         self.b_opt = copy.copy(optimizer) 
 
-    def forward(self, input: np.ndarray) -> np.ndarray:
+    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
         """forward pass. Returns input.dot(weights) + bias"""
         self.input = input
         return np.dot(self.input, self.weights) + self.bias
@@ -85,3 +85,17 @@ class Dense(Layer):
         
         return input_gradient
 
+class Dropout(Layer):
+    def __init__(self, drop_rate:float=0.3) -> None:
+        self.drop_rate = drop_rate
+        self.mask = None
+
+    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
+        self.input = input
+        self.mask = (1 - self.drop_rate)
+        
+        if train: self.mask = np.random.choice([0, 1], size=input.shape, p=[self.drop_rate, 1-self.drop_rate])
+        return input * self.mask
+
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        return output_gradient * self.mask

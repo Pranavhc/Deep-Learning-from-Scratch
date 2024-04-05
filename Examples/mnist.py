@@ -7,10 +7,10 @@ from sklearn.model_selection import train_test_split
 from nn.network import NeuralNetwork
 from nn.optim import StochasticGradientDescent as SGD
 from nn.losses import BinaryCrossEntropy as BCE
-from nn.layers import Dense
+from nn.layers import Dense, Dropout
 from nn.activations import ReLu, Softmax
 from nn.regularization import Regularization
-from nn.utils import DataLoader, to_categorical1D, save_object, load_object
+from nn.utils import DataLoader, to_categorical1D, shuffler, save_object, load_object
 
 ################# PREPARE DATA 
 
@@ -18,7 +18,7 @@ def preprocess_data(x, y):
     x = x.reshape(x.shape[0], 28*28)  # flattening 28x28 to a 784 vector
     x = x.astype("float32") / 255     # normalization: data ranges between 0 and 1
     y = to_categorical1D(y, 10)       # one-hot encoding
-    return x, y
+    return shuffler(x, y)             # return shuffled data
 
 (train_data), (test_data) = mnist.load_data() 
 
@@ -31,23 +31,25 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 
 n_samples, n_features = X_train.shape
 learning_rate: float = 0.01
-epochs=10
+epochs=25
 momentum:float = 0.9
 batch_size:int = 128
-rglr= Regularization('L2', 0.01)
-rglr1= Regularization('L2', 0.01)
-rglr2= Regularization('L2', 0.01)
-
 
 ################# DEFINE THE MODEL
 
 clf = NeuralNetwork(SGD(momentum=momentum), BCE(), [
-    Dense(n_features, 128, rglr), 
+    Dense(n_features, 128), 
+    Dropout(0.3),
     ReLu(),  
-    Dense(128, 64, rglr1),  
+    
+    Dense(128, 64),  
+    Dropout(0.2),
     ReLu(),
-    Dense(64, 32, rglr2),
+    
+    Dense(64, 32),
+    Dropout(0.1),
     ReLu(),
+    
     Dense(32, 10),
     Softmax()
 ])
@@ -74,7 +76,6 @@ def plot_loss():
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.show()
-plot_loss()
 
 def calculate_accuracy():
     test_loader = DataLoader(X_test, y_test, batch_size, shuffle=True)
@@ -85,7 +86,6 @@ def calculate_accuracy():
 
     return (correct / len(y_test)) * 100
 
-print(f"Accuracy: {calculate_accuracy()}%")
 
 
 def plot_images_with_predictions():
@@ -104,6 +104,9 @@ def plot_images_with_predictions():
         color = 'green' if predicted_label == true_label else 'red'
         plt.xlabel("{} ({})".format(predicted_label, true_label), color=color)  
     plt.show()
+
+print(f"Accuracy: {calculate_accuracy()}%")
+plot_loss()
 plot_images_with_predictions()
 
 ################# Accuracy with current hyperparameters: ~97%
