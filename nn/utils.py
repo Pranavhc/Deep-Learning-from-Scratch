@@ -21,6 +21,11 @@ class DataLoader:
             else: 
                 yield self.X[idx[i:i+self.batch_size]]
 
+def shuffler(X, y):
+    idx = np.arange(X.shape[0]) # create an array from 0 to len(X)
+    idx = np.random.permutation(idx) # permute the indexes
+    return X[idx], y[idx] # return the input with permuted indexes
+
 def to_categorical1D(x: np.ndarray, n_col:int=None) -> np.ndarray:
     assert x.ndim == 1, "x should be 1-dimensional"
 
