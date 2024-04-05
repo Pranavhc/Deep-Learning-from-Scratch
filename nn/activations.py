@@ -3,7 +3,7 @@ from .layers import Layer
 
 class ReLu(Layer):
   """ Rectified Linear Unit (ReLU) activation function. """
-  def forward(self, input: np.ndarray) -> np.ndarray:
+  def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
     """ forward pass. Returns the output of the ReLU function."""
     self.input = input
     return np.maximum(0, self.input)
@@ -15,7 +15,7 @@ class ReLu(Layer):
 
 class Sigmoid(Layer):
   """ Sigmoid activation function. """
-  def forward(self, input: np.ndarray) -> np.ndarray:
+  def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
     """ forward pass. Returns the output of the ReLU function."""
     self.input = input
     return 1/(1 + np.exp(-self.input))
@@ -28,7 +28,7 @@ class Sigmoid(Layer):
 
 class Tanhh(Layer):
   """ Tanh activation function. """
-  def forward(self, input: np.ndarray) -> np.ndarray:
+  def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
     """ forward pass. Returns the output of the ReLU function."""
     self.input = input
     return np.tanh(self.input)
@@ -39,7 +39,7 @@ class Tanhh(Layer):
 
 class Softmax(Layer):
   """ Softmax activation function. """
-  def forward(self, input: np.ndarray) -> np.ndarray:
+  def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
     """ forward pass. Returns the output of the Softamax function."""
     self.input = input
     e_x = np.exp(input - np.max(input, axis=-1, keepdims=True))

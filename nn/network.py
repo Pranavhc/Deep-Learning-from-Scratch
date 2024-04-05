@@ -18,36 +18,36 @@ class NeuralNetwork:
             if hasattr(layer, 'initialize'):
                 layer.initialize(optimizer=self.optimizer)
 
-    def _forward(self, input: np.ndarray) -> np.ndarray: 
+    def _forward(self, input: np.ndarray, train:bool) -> np.ndarray: 
         output = input
         for layer in self.layers:
-            output = layer.forward(output)
+            output = layer.forward(output, train=train)
         return output
     
     def _backward(self, loss_grad: np.ndarray) -> None:
         for layer in reversed(self.layers):
             loss_grad = layer.backward(loss_grad)
 
-    def _train_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
-        y_pred = self._forward(X)
+    def _train_on_batch(self, X: np.ndarray, y: np.ndarray, train:bool) -> float:
+        y_pred = self._forward(X, train=train)
         loss = np.mean(self.loss(y, y_pred))
         self._backward(self.loss.grad(y, y_pred))
         return loss
     
     def _test_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
-        y_pred = self._forward(X)
+        y_pred = self._forward(X, train=False)
         loss = np.mean(self.loss(y, y_pred))
         return loss
 
     def predict(self, input):
-        return self._forward(input)
+        return self._forward(input, train=False)
 
     def fit(self, train_data: DataLoader, val_data: DataLoader=None, epochs:int=10, verbose:bool=True) -> tuple[list[float], list[float]]:
         for e in range(epochs):
             train_batch_loss = []
             val_batch_loss = []
             for X_train, y_train in train_data():
-                train_loss = self._train_on_batch(X_train, y_train)
+                train_loss = self._train_on_batch(X_train, y_train, train=True)
                 train_batch_loss.append(train_loss)
             self.error['train'].append(np.mean(train_batch_loss))
 
