@@ -47,11 +47,11 @@ clf = NeuralNetwork(Adam(), CCE(), [
     ReLu(),
 
     Dense(128, 64),  
-    Dropout(0.2),
+    Dropout(0.3),
     ReLu(),
     
     Dense(64, 32),
-    Dropout(0.1),
+    Dropout(0.2),
     ReLu(),
     
     Dense(32, 10),
