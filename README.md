@@ -1,10 +1,11 @@
 ### A from-scratch Implementation of a Neural Network in Python
-##### I've wrote this for learning purposes.
+##### I am building this library to improve my understanding of deep learning techniques.
+
 
 Usage Example:
 ```python
 
-# Import everything you need
+# Imports
 from nn.network import NeuralNetwork
 from nn.optim import Adam
 from nn.losses import CategoricalCrossEntropy as CCE
@@ -37,7 +38,6 @@ clf = NeuralNetwork(Adam(), CCE(), [
 # Prepare your datasets and define their data loaders
 train_loader = DataLoader(X_train, y_train, batch_size=128, shuffle=True)
 val_loader = DataLoader(X_val, y_val, batch_size=128, shuffle=True)
-
 test_loader = DataLoader(X_test, y_test, batch_size=128, shuffle=False)
 
 # train your model 
