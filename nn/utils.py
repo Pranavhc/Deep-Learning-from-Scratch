@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from typing import Generator
+from typing import Generator, Union
 
 class DataLoader:
     def __init__(self, X: np.ndarray, y: np.ndarray, batch_size: int, shuffle:bool= False):
@@ -9,7 +9,7 @@ class DataLoader:
         self.shuffle = shuffle
         self.len = len(y)
     
-    def __call__(self) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
+    def __call__(self) -> Union[Generator[tuple[np.ndarray, np.ndarray], None, None], Generator[np.ndarray, None, None]]:
         if self.y is not None: assert(len(self.X) == len(self.y)), "X and y must have the same length!"
 
         idx = np.arange(self.len)
@@ -26,7 +26,7 @@ def shuffler(X, y):
     idx = np.random.permutation(idx) # permute the indexes
     return X[idx], y[idx] # return the input with permuted indexes
 
-def to_categorical1D(x: np.ndarray, n_col:int=None) -> np.ndarray:
+def to_categorical1D(x: np.ndarray, n_col:Union[int, None]=None) -> np.ndarray:
     assert x.ndim == 1, "x should be 1-dimensional"
 
     if not n_col: n_col = np.max(x) + 1

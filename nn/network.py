@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 
 from .layers import Layer
@@ -15,7 +16,7 @@ class NeuralNetwork:
         self.error = {'train': [], 'val': []}
 
         for layer in layers:
-            if hasattr(layer, 'initialize'):
+            if hasattr(layer, 'initialize'): 
                 layer.initialize(optimizer=self.optimizer)
 
     def _forward(self, input: np.ndarray, train:bool) -> np.ndarray: 
@@ -32,17 +33,17 @@ class NeuralNetwork:
         y_pred = self._forward(X, train=train)
         loss = np.mean(self.loss(y, y_pred))
         self._backward(self.loss.grad(y, y_pred))
-        return loss
+        return float(loss)
     
     def _test_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
         y_pred = self._forward(X, train=False)
         loss = np.mean(self.loss(y, y_pred))
-        return loss
+        return float(loss)
 
     def predict(self, input):
         return self._forward(input, train=False)
 
-    def fit(self, train_data: DataLoader, val_data: DataLoader=None, epochs:int=10, verbose:bool=True) -> tuple[list[float], list[float]]:
+    def fit(self, train_data: DataLoader, val_data: Union[DataLoader, None]=None, epochs:int=10, verbose:bool=True) -> tuple[list[float], list[float]]:
         for e in range(epochs):
             train_batch_loss = []
             val_batch_loss = []

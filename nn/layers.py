@@ -3,6 +3,7 @@ import numpy as np
 
 from .optim import Optimizer
 from .regularization import Regularization
+from typing import Union
 
 class Layer:
     """The interface that each layer should implement."""
@@ -16,16 +17,16 @@ class Layer:
 
 class Dense(Layer):
     """A dense (fully connected) layer in a neural network."""
-
-    def __init__(self, input_size: int, output_size: int, regularization: Regularization=None) -> None:
+    def __init__(self, input_size: int, output_size: int, regularization: Union[Regularization, None]=None) -> None:
         """ Initialize a dense layer."""
 
-        self.input = None 
         self.input_size = input_size
         self.output_size = output_size
+        
+        self.input = np.ndarray([]) 
 
-        self.weights = None
-        self.bias = None
+        self.weights = np.ndarray([]) 
+        self.bias = np.ndarray([]) 
 
         self.regularization = regularization
 
