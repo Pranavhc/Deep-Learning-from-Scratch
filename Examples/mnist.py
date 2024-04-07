@@ -5,7 +5,7 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 
 from nn.network import NeuralNetwork
-from nn.optim import StochasticGradientDescent as SGD, AdaGrad, RMSProp
+from nn.optim import SGD, AdaGrad, RMSProp
 from nn.losses import BinaryCrossEntropy as BCE, CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.activations import ReLu, Softmax

@@ -4,7 +4,7 @@ class Optimizer():
     def update(self, parameters: np.ndarray, parameters_grad: np.ndarray) -> np.ndarray:
         raise NotImplementedError
 
-class StochasticGradientDescent(Optimizer):
+class SGD(Optimizer):
     """ SGD optimizer with momentum.
     
     Update formula: 
