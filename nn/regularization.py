@@ -23,4 +23,5 @@ class Regularization():
 
     def __call__(self, weights: np.ndarray) -> np.ndarray:
         if self.norm == "L1": return self.lambda_ * np.sign(weights)
-        elif self.norm == "L2": return 2 * self.lambda_ * weights
+        return 2 * self.lambda_ * weights # for 'L2' 
+        
