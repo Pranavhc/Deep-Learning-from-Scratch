@@ -99,4 +99,4 @@ class Dropout(Layer):
         return input * self.mask
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        return output_gradient * self.mask # scales down gradient of the inactive neurons
+        return output_gradient * self.mask # sets gradient of the inactive neurons to zero
