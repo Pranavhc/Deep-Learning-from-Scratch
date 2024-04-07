@@ -5,7 +5,7 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 
 from nn.network import NeuralNetwork
-from nn.optim import SGD, AdaGrad, RMSProp
+from nn.optim import SGD, AdaGrad, RMSProp, Adam
 from nn.losses import BinaryCrossEntropy as BCE, CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.activations import ReLu, Softmax
@@ -37,7 +37,7 @@ batch_size:int = 128
 
 ################# DEFINE THE MODEL
 
-clf = NeuralNetwork(RMSProp(), CCE(), [
+clf = NeuralNetwork(Adam(), CCE(), [
     Dense(n_features, 256), 
     Dropout(0.3),
     ReLu(),  

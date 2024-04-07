@@ -5,7 +5,7 @@ class Optimizer():
         raise NotImplementedError
 
 class SGD(Optimizer):
-    """ SGD optimizer with momentum.
+    """ ### SGD optimizer with momentum
     
     Update formula: 
         ```python 
@@ -25,7 +25,7 @@ class SGD(Optimizer):
         return parameters - self.learning_rate * self.velocity
 
 class AdaGrad(Optimizer):
-    """ AdaGrad optimizer.
+    """ ### AdaGrad optimizer
     
     Update formula: 
         ```python 
@@ -44,7 +44,7 @@ class AdaGrad(Optimizer):
         return parameters - self.learning_rate * parameters_grad / (np.sqrt(self.cache) + 1e-8)
 
 class RMSProp(Optimizer):
-    """ RMSProp optimizer.
+    """ ### RMSProp optimizer
     
     Update formula: 
         ```python 
@@ -62,3 +62,32 @@ class RMSProp(Optimizer):
 
         self.cache =  self.decay_rate * self.cache + (1-self.decay_rate) * parameters_grad**2
         return parameters - self.learning_rate * parameters_grad / (np.sqrt(self.cache) + 1e-8)
+    
+
+class Adam(Optimizer):
+    """ ### Adam optimizer
+    
+    Update formula: 
+        ```python 
+        m = decay_rate_1 * m + (1 - decay_rate_1) * grad
+        v = decay_rate_2 * v + (1 - decay_rate_2) * grad**2
+        x = x - learning_rate * m / (sqrt(v) + 1e-8)
+        ```
+    """
+    def __init__(self, learning_rate:float = 0.01, b1:float=0.9, b2:float=0.995 ) -> None:
+        self.learning_rate = learning_rate
+        self.b1 = b1
+        self.b2 = b2
+
+        self.momentum = None
+        self.velocity = None
+
+    def update(self, parameters: np.ndarray, parameters_grad: np.ndarray) -> np.ndarray:
+        if self.momentum is None:
+            self.momentum = np.zeros(np.shape(parameters))
+            self.velocity = np.zeros(np.shape(parameters))
+
+        self.momentum = self.b1 * self.momentum + (1 - self.b1) * parameters_grad
+        self.velocity = self.b2 * self.velocity + (1 - self.b2) * parameters_grad**2
+
+        return parameters - self.learning_rate * self.momentum / (np.sqrt(self.velocity) + 1e-8)
