@@ -69,8 +69,12 @@ class Adam(Optimizer):
     
     Update formula: 
         ```python 
-        m = decay_rate_1 * m + (1 - decay_rate_1) * grad
-        v = decay_rate_2 * v + (1 - decay_rate_2) * grad**2
+        momentum = decay_rate_1 * m + (1 - decay_rate_1) * grad
+        velocity = decay_rate_2 * v + (1 - decay_rate_2) * grad**2
+
+        m = momentum / (1 - decay_rate_1)
+        v = velocity / (1 - decay_rate_2)
+
         x = x - learning_rate * m / (sqrt(v) + 1e-8)
         ```
     """
@@ -87,7 +91,14 @@ class Adam(Optimizer):
             self.momentum = np.zeros(np.shape(parameters))
             self.velocity = np.zeros(np.shape(parameters))
 
+        
         self.momentum = self.b1 * self.momentum + (1 - self.b1) * parameters_grad
         self.velocity = self.b2 * self.velocity + (1 - self.b2) * parameters_grad**2
 
-        return parameters - self.learning_rate * self.momentum / (np.sqrt(self.velocity) + 1e-8)
+        # since momentum and velocity are zero intially, they tend to be close to zero.
+        # It's a bias that we have in the first few iterations.
+        # To avoid this bias, we scale up the momentum and velocity.
+        m = self.momentum / (1 - self.b1)
+        v = self.velocity / (1 - self.b2)
+
+        return parameters - self.learning_rate * m / (np.sqrt(v) + 1e-8)
