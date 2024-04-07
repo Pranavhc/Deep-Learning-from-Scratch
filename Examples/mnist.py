@@ -6,10 +6,10 @@ from sklearn.model_selection import train_test_split
 
 from nn.network import NeuralNetwork
 from nn.optim import StochasticGradientDescent as SGD
-from nn.losses import BinaryCrossEntropy as BCE
+from nn.losses import BinaryCrossEntropy as BCE, CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.activations import ReLu, Softmax
-from nn.regularization import Regularization
+from nn.regularization import Regularization as Rglr
 from nn.utils import DataLoader, to_categorical1D, shuffler, save_object, load_object
 
 ################# PREPARE DATA 
@@ -31,17 +31,21 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 
 n_samples, n_features = X_train.shape
 learning_rate: float = 0.01
-epochs=25
+epochs=22
 momentum:float = 0.9
 batch_size:int = 128
 
 ################# DEFINE THE MODEL
 
-clf = NeuralNetwork(SGD(momentum=momentum), BCE(), [
-    Dense(n_features, 128), 
+clf = NeuralNetwork(SGD(momentum=momentum), CCE(), [
+    Dense(n_features, 256), 
     Dropout(0.3),
     ReLu(),  
-    
+
+    Dense(256, 128), 
+    Dropout(0.3),
+    ReLu(),
+
     Dense(128, 64),  
     Dropout(0.2),
     ReLu(),
@@ -96,7 +100,7 @@ def plot_images_with_predictions():
         plt.xticks([]); plt.yticks([])
         
         img = X_test[i].reshape((28, 28))
-        plt.imshow(img, cmap=plt.cm.binary)
+        plt.imshow(img, cmap=plt.cm.binary) # type: ignore
         
         predicted_label = np.argmax(clf.predict(X_test[i]))
         true_label = np.argmax(y_test[i])
