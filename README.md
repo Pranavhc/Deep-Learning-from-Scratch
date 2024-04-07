@@ -6,7 +6,7 @@ Usage Example:
 
 # Import everything you need
 from nn.network import NeuralNetwork
-from nn.optim import StochasticGradientDescent as SGD
+from nn.optim import Adam
 from nn.losses import CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.regularization import Regularization as Rglr
@@ -14,7 +14,7 @@ from nn.activations import ReLu, Softmax
 from nn.utils import DataLoader, save_object, load_object
 
 # Define your model
-clf = NeuralNetwork(SGD(momentum=0.9), CCE(), [
+clf = NeuralNetwork(Adam(), CCE(), [
     Dense(784, 256, Rglr('L2', 0.1)), 
     ReLu(),
 
@@ -23,7 +23,7 @@ clf = NeuralNetwork(SGD(momentum=0.9), CCE(), [
     ReLu(),
 
     Dense(128, 64),  
-    Dropout(0.2),
+    Dropout(0.3),
     ReLu(),
 
     Dense(64, 32),
