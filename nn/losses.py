@@ -10,7 +10,6 @@ class Loss:
         """Compute the gradient of the loss with respect to the predicted labels."""
         raise NotImplementedError
 
-# Mean Squared Error
 class MSE(Loss):
     """Mean Squared Error Loss Function."""
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -19,8 +18,6 @@ class MSE(Loss):
     def grad(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         return 2 * (y_pred - y_true) / np.size(y_true)
     
-
-# Binary Cross Entropy
 class BinaryCrossEntropy(Loss):
     """Binary CrossEntropy Loss Function."""
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
