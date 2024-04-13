@@ -2,40 +2,37 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from nn.network import NeuralNetwork
-from nn.dense import Dense
-from nn.activation import Sigmoid, ReLu
-from nn.loss_fn import MSE
+from nn.optim import Adam
+from nn.losses import BinaryCrossEntropy as BCE
+from nn.layers import Dense
+from nn.activations import Sigmoid
+from nn.utils import DataLoader
 
+X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2))
+Y = np.reshape([[0], [1], [1], [0]], (4, 1))
 
-X = np.reshape([[0,0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
-Y = np.reshape([[0], [1], [1], [0]], (4, 1, 1))
+data = DataLoader(X, Y, 4, True)
 
-network = NeuralNetwork([
-    Dense(2, 6), 
-    ReLu(),  
-    Dense(6, 3),
-    ReLu(),
-    Dense(3, 1),
-    Sigmoid()
+model = NeuralNetwork(Adam(), BCE(), [
+    Dense(2, 4), Sigmoid(),
+    Dense(4, 2), Sigmoid(),
+    Dense(2, 1), Sigmoid()
 ])
 
-# network.train(MSE(), X, Y, epochs=10000, learning_rate=0.1, verbose_interval=100)
-# network.save("Examples/models/xor.pkl")
+model.fit(data, epochs=800)
 
-network = NeuralNetwork([]).load("Examples/models/xor.pkl")
-
+###### Decision Boundary
 def decision_boundary():
     points = []
     for x in np.linspace(0, 1, 20):
-        for y in np.linspace(0, 1, 20):
-            z = network.predict([[x], [y]])
-            points.append([x, y, z[0,0]])
-
+        for y in np.linspace(0, 1, 20): z = model.predict(np.array([[x, y]]))[0, 0]; points.append([x, y, z])
     points = np.array(points)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
     ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=points[:, 2], cmap="winter")
-    plt.show()
 
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    plt.show()
 decision_boundary()
