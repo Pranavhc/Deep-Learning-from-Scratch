@@ -16,8 +16,7 @@ class NeuralNetwork:
         self.error = {'train': [], 'val': []}
 
         for layer in layers:
-            if hasattr(layer, 'initialize'): 
-                layer.initialize(optimizer=self.optimizer)
+            if hasattr(layer, 'initialize'): layer.initialize(optimizer=self.optimizer) # type: ignore
 
     def _forward(self, input: np.ndarray, train:bool) -> np.ndarray: 
         output = input
@@ -31,13 +30,19 @@ class NeuralNetwork:
 
     def _train_on_batch(self, X: np.ndarray, y: np.ndarray, train:bool) -> float:
         y_pred = self._forward(X, train=train)
-        loss = np.mean(self.loss(y, y_pred))
+    
+        try: loss = np.mean(self.loss(y, y_pred))
+        except: loss = self.loss(y, y_pred)
+
         self._backward(self.loss.grad(y, y_pred))
         return float(loss)
     
     def _test_on_batch(self, X: np.ndarray, y: np.ndarray) -> float:
         y_pred = self._forward(X, train=False)
-        loss = np.mean(self.loss(y, y_pred))
+    
+        try: loss = np.mean(self.loss(y, y_pred))
+        except: loss = self.loss(y, y_pred)
+
         return float(loss)
 
     def predict(self, input):
@@ -47,19 +52,20 @@ class NeuralNetwork:
         for e in range(epochs):
             train_batch_loss = []
             val_batch_loss = []
+
             for X_train, y_train in train_data():
                 train_loss = self._train_on_batch(X_train, y_train, train=True)
                 train_batch_loss.append(train_loss)
-            self.error['train'].append(np.mean(train_batch_loss))
+            self.error['train'].append(float(np.mean(train_batch_loss)))
 
             if val_data:
                 for X_val, y_val in val_data():
                     val_loss = self._test_on_batch(X_val, y_val)
                     val_batch_loss.append(val_loss)
-                self.error['val'].append(np.mean(val_batch_loss))
+                self.error['val'].append(float(np.mean(val_batch_loss)))
 
             if verbose:
                 if val_data: print(f"{e}/{epochs}\t- loss: {self.error['train'][-1]:.4f}  -  val_loss: {self.error['val'][-1]:.4f}")
-                else: print(f"{e}/{epochs}\t- loss: {np.mean(self.error['train'][-1]):.4f}")
+                else: print(f"{e}/{epochs}\t- loss: {self.error['train'][-1]:.4f}")
         
-        return (self.error['train'], self.error['val'])
+        return self.error['train'], self.error['val']
