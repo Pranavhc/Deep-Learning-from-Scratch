@@ -5,11 +5,10 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 
 from nn.network import NeuralNetwork
-from nn.optim import SGD, AdaGrad, RMSProp, Adam
-from nn.losses import BinaryCrossEntropy as BCE, CategoricalCrossEntropy as CCE
+from nn.optim import Adam
+from nn.losses import CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.activations import ReLu, Softmax
-from nn.regularization import Regularization as Rglr
 from nn.utils import DataLoader, to_categorical1D, shuffler, save_object, load_object
 
 ################# PREPARE DATA 
