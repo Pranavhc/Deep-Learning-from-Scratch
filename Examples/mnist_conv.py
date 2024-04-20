@@ -62,10 +62,10 @@ history = clf.fit(train_loader, val_loader, epochs, verbose=True)
 
 
 ################# SAVE THE MODEL
-save_object(clf, "Examples/models/mnist_clf.pkl")
+save_object(clf, "Examples/models/mnist_conv_clf.pkl")
 
 ################# LOAD THE MODEL
-clf = load_object("Examples/models/mnist_clf.pkl")
+clf = load_object("Examples/models/mnist_conv_clf.pkl")
 
 ################# EVALUATE HOWEVER YOU LIKE
 def calculate_accuracy():
