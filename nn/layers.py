@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from scipy.signal import fftconvolve
+from scipy.signal import convolve
 
 from .optim import Optimizer
 from .regularization import Regularization
@@ -104,8 +104,8 @@ class Dropout(Layer):
 
 ############ Code below does not work yet ############
 
-# slow af
-# backward might not be correct
+# very slow
+# loss doesn't go down as much 
 # no stride option
 
 class Conv2D(Layer):
@@ -142,7 +142,7 @@ class Conv2D(Layer):
         self.input = input
         padding = "same" if self.padding else "valid"
 
-        output = fftconvolve(input, self.weights, mode=padding)
+        output = convolve(input, np.flip(self.weights, axis=(2, 3)), mode=padding)
         output = output + self.bias.reshape((1, self.n_filters, 1, 1))
 
         return output
@@ -150,10 +150,13 @@ class Conv2D(Layer):
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         padding = "same" if self.padding else "valid"
 
+        # flip the filters for the convolution operations
+        flipped_weights = np.flip(self.weights, axis=(2, 3))
+
         # calculate gradients
-        weights_gradient = fftconvolve(self.input, output_gradient, mode='valid')
+        weights_gradient = convolve(self.input, np.flip(output_gradient, axis=(0, 2, 3)), mode='valid')
         bias_grad = np.sum(output_gradient, axis=(0, 2, 3), keepdims=True)
-        input_gradient = fftconvolve(output_gradient, self.weights, mode=padding)
+        input_gradient = convolve(output_gradient, flipped_weights, mode=padding)
         
         # update parameters
         self.weights = self.W_opt.update(self.weights, weights_gradient)
