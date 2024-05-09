@@ -33,7 +33,6 @@ class CategoricalCrossEntropy(Loss):
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
         return float(-np.mean(y_true * np.log(y_pred)))
-        
     
     def grad(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
