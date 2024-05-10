@@ -1,6 +1,5 @@
 import copy
 import numpy as np
-from scipy.signal import convolve
 
 from .optim import Optimizer
 from .regularization import Regularization
@@ -102,68 +101,6 @@ class Dropout(Layer):
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return output_gradient * self.mask # sets gradient of the inactive neurons to zero
 
-############ Code below does not work yet ############
-
-# very slow
-# loss doesn't go down as much 
-# no stride option
-
-class Conv2D(Layer):
-    """ A 2D Convolution Layer
-
-    Parameters:
-    * n_filters: number of filters
-    * filter_shape: tuple (height, width)
-    * input_shape: tuple (channels, height, width)
-    * padding: True = "same" / False = "valid"
-    """
-    def __init__(self, n_filters:int, filter_shape: tuple[int, int], input_shape:tuple, padding:bool=True) -> None:
-        self.n_filters = n_filters
-        self.filter_shape = filter_shape
-        self.input_shape = input_shape
-        self.padding = padding
-        
-    def initialize(self, optimizer: Optimizer) -> None:
-        """intialize the layer parameters"""
-
-        f_height, f_width = self.filter_shape
-        channels = self.input_shape[0]
-
-        limit = 1/np.sqrt(f_height * f_width * channels)
-
-        self.weights = np.random.uniform(-limit, limit, size=(self.n_filters, channels, f_height, f_width))
-        self.bias = np.random.uniform(-limit, limit, size=(self.n_filters, 1))
-    
-        # save state of the optimizer for parameters of this layer
-        self.W_opt = copy.copy(optimizer) 
-        self.b_opt = copy.copy(optimizer) 
-
-    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
-        self.input = input
-        padding = "same" if self.padding else "valid"
-
-        output = convolve(input, np.flip(self.weights, axis=(2, 3)), mode=padding)
-        output = output + self.bias.reshape((1, self.n_filters, 1, 1))
-
-        return output
-    
-    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        padding = "same" if self.padding else "valid"
-
-        # flip the filters for the convolution operations
-        flipped_weights = np.flip(self.weights, axis=(2, 3))
-
-        # calculate gradients
-        weights_gradient = convolve(self.input, np.flip(output_gradient, axis=(0, 2, 3)), mode='valid')
-        bias_grad = np.sum(output_gradient, axis=(0, 2, 3), keepdims=True)
-        input_gradient = convolve(output_gradient, flipped_weights, mode=padding)
-        
-        # update parameters
-        self.weights = self.W_opt.update(self.weights, weights_gradient)
-        self.bias = self.b_opt.update(self.bias.reshape((1, self.n_filters, 1, 1)), bias_grad)
-
-        return input_gradient
-    
 class Flatten(Layer):
     def __init__(self) -> None:
         self.prev_input_shape: tuple
