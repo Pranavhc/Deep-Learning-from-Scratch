@@ -22,7 +22,7 @@ class Sigmoid(Layer):
     grad = sigmoid * (1 - sigmoid)
     return np.multiply(output_gradient, grad)
 
-class Tanhh(Layer):
+class Tanh(Layer):
   """ Tanh activation function. """
   def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
     self.input = input
