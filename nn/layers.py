@@ -85,6 +85,71 @@ class Dense(Layer):
         self.bias = self.b_opt.update(self.bias, bias_grad)
         
         return input_gradient
+    
+class Recurrent(Layer):
+    def __init__(self, input_size:int, output_size:int, activation:Layer) -> None:
+        self.input_size = input_size
+        self.output_size = output_size
+        self.activation = activation
+
+        self.weights =  np.ndarray([])          # weights for input state 
+        self.recurrent_weights = np.ndarray([]) # weights for previous state
+        self.bias = np.ndarray([]) 
+
+    def initialize(self, optimizer: Optimizer) -> None:
+        """intialize the layer parameters"""
+        limit_w = 1/np.sqrt(self.input_size)
+        limit_rw = 1/np.sqrt(self.output_size)
+
+        self.weights = np.random.uniform(-limit_w, limit_w, size=(self.input_size, self.output_size))
+        self.recurrent_weights = np.random.uniform(-limit_rw, limit_rw, size=(self.output_size, self.output_size))
+        self.bias = np.zeros((1, self.output_size))
+
+        # save state of the optimizer for parameters of this layer
+        self.W_opt = copy.copy(optimizer)
+        self.RW_opt = copy.copy(optimizer)
+        self.b_opt = copy.copy(optimizer)
+
+    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
+        """forward pass. Returns input.dot(weights_1) + prev_state.dot(weights_2) + bias"""
+        self.input = input
+        batch_size, timesteps, n_features = input.shape
+
+        # initialize states
+        self.prev_state = np.zeros((batch_size, self.output_size)) # store outputs of the previous timestep
+        self.outputs = np.zeros((batch_size, timesteps, self.output_size))
+        
+        self.successive_states = np.zeros((batch_size, timesteps+1, self.output_size))
+
+        for t in range(timesteps):
+            # combine input and previous state
+            self.outputs[:, t] = self.activation.forward(np.dot(self.input[:, t], self.weights) + np.dot(self.prev_state, self.recurrent_weights) + self.bias)
+            self.successive_states[:, t+1] = self.outputs[:, t] # save the output
+            self.prev_state = self.outputs[:, t] # update the state
+
+        return self.successive_states[:, 1:] # shape: (batch_size, timesteps, n_features)
+    
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        batch_size, timesteps, n_features = output_gradient.shape
+        
+        # calculate gradients (W, X, b)
+        W_gradient = np.matmul(self.input.transpose(0, 2, 1), output_gradient).sum(axis=0)
+        input_gradient = np.matmul(output_gradient, self.weights.T)
+        b_gradient = np.sum(output_gradient, axis=(0, 1), keepdims=True)
+
+        # calculate recurrent gradients (RW)
+        RW_gradient = np.zeros_like(self.recurrent_weights)
+        for t in reversed(range(timesteps)):
+            RW_gradient += np.dot(self.successive_states[:, t].T, output_gradient[:, t])
+            # update output gradient for the previous timestep
+            if t > 0: output_gradient[:, t-1] += np.dot(output_gradient[:, t], self.recurrent_weights.T)
+
+        # update parameters
+        self.weights = self.W_opt.update(self.weights, W_gradient)
+        self.recurrent_weights = self.RW_opt.update(self.recurrent_weights, RW_gradient)
+        self.bias = self.b_opt.update(self.bias, b_gradient)
+
+        return input_gradient
 
 class Dropout(Layer):
     def __init__(self, drop_rate:float=0.3) -> None:
@@ -94,7 +159,7 @@ class Dropout(Layer):
     def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
         self.input = input
         self.mask = (1 - self.drop_rate)
-        
+
         if train: self.mask = np.random.choice([0, 1], size=input.shape, p=[self.drop_rate, 1-self.drop_rate])
         return input * self.mask
 
@@ -111,7 +176,7 @@ class Flatten(Layer):
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return output_gradient.reshape(self.prev_input_shape)
-    
+
 class Reshape(Layer):
     def __init__(self, output_shape):
         self.input_shape: tuple
