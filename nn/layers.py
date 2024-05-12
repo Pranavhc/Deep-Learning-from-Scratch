@@ -19,15 +19,8 @@ class Dense(Layer):
     """A dense (fully connected) layer in a neural network."""
     def __init__(self, input_size: int, output_size: int, regularization: Union[Regularization, None]=None) -> None:
         """ Initialize a dense layer."""
-
         self.input_size = input_size
         self.output_size = output_size
-        
-        self.input = np.ndarray([]) 
-
-        self.weights = np.ndarray([]) 
-        self.bias = np.ndarray([]) 
-
         self.regularization = regularization
 
     def initialize(self, optimizer: Optimizer) -> None:
@@ -48,26 +41,20 @@ class Dense(Layer):
         return np.dot(self.input, self.weights) + self.bias
     
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        """ 
-        ## backward pass
-        1. Calculates grdients of loss wrt parameters and input of the layer.
-        2. Updates parameters. 
-        3. Applies regularization if given. 
-        4. Returns gradient of input of the layer.
-        
+        """ ## backward pass
+        1. Calculates gradients of loss with respect to parameters and input.
+        2. Updates parameters.
+        3. Applies regularization if specified.
+        4. Returns gradient with respect to input.
+
         ### Mathematical description:
-        Backpropagation - the process of calculating the gradient of the loss function
+        Backpropagation calculates the gradient of the loss function:
 
-            if `∂L/∂y_hat = 2*(y_hat-y)/n` then
+            * Gradient of Weights: `∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w`
+            * Gradient of Bias: `∂L/∂b = ∂L/∂y_hat`
+            * Gradient of Input: `∂L/∂x = ∂L/∂y_hat * w`
 
-            Gradient of Weights: `∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w = 2*(y_hat-y)/n * x`
-
-            Gradient of Bias: `∂L/∂b = ∂L/∂y_hat * ∂y_hat/∂b = 2*(y_hat-y)/n`
-
-            Gradient of Input: `∂L/∂x = ∂L/∂y_hat * ∂y_hat/∂x = 2*(y_hat-y)/n * w`
-
-        By chain rule, if we take the activation function into account, we are supposed to multiply its
-        derivative with the derivative of loss w.r.t to y_hat, I.e. `output_gradient = ∂L/∂y_hat * ∂A/∂y_hat`.
+        For an activation function, multiply its derivative with the loss derivative: `output_gradient = ∂L/∂y_hat * ∂A/∂y_hat`.
         """
 
         # calculate gradients                                       # L = loss  Y = output  W = weights  X = input
@@ -87,23 +74,20 @@ class Dense(Layer):
         return input_gradient
     
 class Recurrent(Layer):
-    def __init__(self, input_size:int, output_size:int, activation:Layer) -> None:
+    def __init__(self, input_size:int, output_size:int, activation:Layer, last:bool=False) -> None:
         self.input_size = input_size
         self.output_size = output_size
         self.activation = activation
-
-        self.weights =  np.ndarray([])          # weights for input state 
-        self.recurrent_weights = np.ndarray([]) # weights for previous state
-        self.bias = np.ndarray([]) 
+        self.is_last = last
 
     def initialize(self, optimizer: Optimizer) -> None:
         """intialize the layer parameters"""
         limit_w = 1/np.sqrt(self.input_size)
         limit_rw = 1/np.sqrt(self.output_size)
 
-        self.weights = np.random.uniform(-limit_w, limit_w, size=(self.input_size, self.output_size))
-        self.recurrent_weights = np.random.uniform(-limit_rw, limit_rw, size=(self.output_size, self.output_size))
-        self.bias = np.zeros((1, self.output_size))
+        self.weights = np.random.uniform(-limit_w, limit_w, size=(self.input_size, self.output_size))               # weights for input state 
+        self.recurrent_weights = np.random.uniform(-limit_rw, limit_rw, size=(self.output_size, self.output_size)) # weights for previous state
+        self.bias = np.zeros((1, self.output_size))                                                               # bias
 
         # save state of the optimizer for parameters of this layer
         self.W_opt = copy.copy(optimizer)
@@ -114,32 +98,35 @@ class Recurrent(Layer):
         """forward pass. Returns input.dot(weights_1) + prev_state.dot(weights_2) + bias"""
         self.input = input
         batch_size, timesteps, n_features = input.shape
+        self.timesteps = timesteps
 
         # initialize states
-        self.prev_state = np.zeros((batch_size, self.output_size)) # store outputs of the previous timestep
         self.outputs = np.zeros((batch_size, timesteps, self.output_size))
+        self.prev_state = np.zeros((batch_size, self.output_size)) # store output of the previous timestep
         
-        self.successive_states = np.zeros((batch_size, timesteps+1, self.output_size))
+        self.successive_states = np.zeros((batch_size, timesteps+1, self.output_size)) # store all outputs
 
         for t in range(timesteps):
             # combine input and previous state
             self.outputs[:, t] = self.activation.forward(np.dot(self.input[:, t], self.weights) + np.dot(self.prev_state, self.recurrent_weights) + self.bias)
-            self.successive_states[:, t+1] = self.outputs[:, t] # save the output
-            self.prev_state = self.outputs[:, t] # update the state
+            self.prev_state = self.outputs[:, t] # save previous output
+            
+            self.successive_states[:, t+1] = self.outputs[:, t] # save all outputs
 
-        return self.successive_states[:, 1:] # shape: (batch_size, timesteps, n_features)
+        if self.is_last: return self.outputs[:, -1]
+        return self.successive_states[:, 1:] # shape: (batch_size, timesteps, output_size)
     
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        batch_size, timesteps, n_features = output_gradient.shape
+        print("output_gradient shape: ", output_gradient.shape)
         
         # calculate gradients (W, X, b)
-        W_gradient = np.matmul(self.input.transpose(0, 2, 1), output_gradient).sum(axis=0)
+        W_gradient = np.matmul(self.input.T, output_gradient).sum(axis=0)
         input_gradient = np.matmul(output_gradient, self.weights.T)
         b_gradient = np.sum(output_gradient, axis=(0, 1), keepdims=True)
 
         # calculate recurrent gradients (RW)
         RW_gradient = np.zeros_like(self.recurrent_weights)
-        for t in reversed(range(timesteps)):
+        for t in reversed(range(self.timesteps)):
             RW_gradient += np.dot(self.successive_states[:, t].T, output_gradient[:, t])
             # update output gradient for the previous timestep
             if t > 0: output_gradient[:, t-1] += np.dot(output_gradient[:, t], self.recurrent_weights.T)
