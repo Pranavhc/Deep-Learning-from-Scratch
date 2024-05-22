@@ -12,12 +12,13 @@ class Loss:
 
 class MSE(Loss):
     """Mean Squared Error Loss Function."""
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        return float(np.mean(np.power(y_true - y_pred, 2)))
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        return 0.5 * np.power(y_true - y_pred, 2)
 
     def grad(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
-        return 2 * (y_pred - y_true) / np.size(y_true)
+        return -(y_pred - y_true)
     
+
 class BinaryCrossEntropy(Loss):
     """Binary CrossEntropy Loss Function."""
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
