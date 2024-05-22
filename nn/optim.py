@@ -88,15 +88,14 @@ class Adam(Optimizer):
 
     def update(self, parameters: np.ndarray, parameters_grad: np.ndarray) -> np.ndarray:
         if self.momentum is None:
-            self.momentum = np.zeros(np.shape(parameters))
-            self.velocity = np.zeros(np.shape(parameters))
+            self.momentum = np.zeros_like(parameters)
+            self.velocity = np.zeros_like(parameters)
 
         
         self.momentum = self.b1 * self.momentum + (1 - self.b1) * parameters_grad
-        self.velocity = self.b2 * self.velocity + (1 - self.b2) * parameters_grad**2
+        self.velocity = self.b2 * self.velocity + (1 - self.b2) * parameters_grad**2 #type: ignore 
 
         # since momentum and velocity are zero intially, they tend to be close to zero.
-        # It's a bias that we have in the first few iterations.
         # To avoid this bias, we scale up the momentum and velocity.
         m = self.momentum / (1 - self.b1)
         v = self.velocity / (1 - self.b2)
