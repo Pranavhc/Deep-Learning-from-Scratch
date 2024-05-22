@@ -8,6 +8,7 @@ class DataLoader:
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.len = len(y)
+        self.samples = self.len // batch_size
     
     def __call__(self) -> Union[Generator[tuple[np.ndarray, np.ndarray], None, None], Generator[np.ndarray, None, None]]:
         if self.y is not None: assert(len(self.X) == len(self.y)), "X and y must have the same length!"
