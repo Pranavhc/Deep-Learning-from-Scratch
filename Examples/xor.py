@@ -14,12 +14,15 @@ Y = np.reshape([[0], [1], [1], [0]], (4, 1))
 data = DataLoader(X, Y, 4, True)
 
 model = NeuralNetwork(Adam(), BCE(), [
-    Dense(2, 4), Sigmoid(),
-    Dense(4, 2), Sigmoid(),
-    Dense(2, 1), Sigmoid()
+    Dense(2, 4), 
+    Sigmoid(),
+    Dense(4, 2), 
+    Sigmoid(),
+    Dense(2, 1), 
+    Sigmoid()
 ])
 
-model.fit(data, epochs=800)
+model.fit(data, epochs=800, verbose=False)
 
 ###### Decision Boundary
 def decision_boundary():

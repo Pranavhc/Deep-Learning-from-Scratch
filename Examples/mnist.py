@@ -31,7 +31,7 @@ X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.
 n_samples, n_features = X_train.shape
 learning_rate= 0.01
 epochs=10
-batch_size=128
+batch_size=256
 
 ################# DEFINE THE MODEL
 
