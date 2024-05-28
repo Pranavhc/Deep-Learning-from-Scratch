@@ -57,12 +57,12 @@ class NeuralNetwork:
     def predict(self, input):
         return self._forward(input, train=False)
 
-    def fit(self, train_data: DataLoader, val_data: Union[DataLoader, None]=None, epochs:int=10, accuracy:bool=False) -> Union[tuple[dict, dict], dict]:
+    def fit(self, train_data: DataLoader, val_data: Union[DataLoader, None]=None, epochs:int=10, accuracy:bool=False, verbose:bool=True) -> Union[tuple[dict, dict], dict]:
         for e in range(epochs):
             train_batch_loss, val_batch_loss = [], []
             train_batch_acc, val_batch_acc = [], []
 
-            with tqdm(train_data(), unit='batch', disable=True) as pbar:
+            with tqdm(train_data(), unit='batch', disable=not verbose) as pbar:
                 for X_train, y_train in pbar:
                     pbar.set_description(f"Epoch {e+1}/{epochs}")
                     pbar.total = train_data.samples
