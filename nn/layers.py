@@ -9,11 +9,11 @@ class Layer:
     """The interface that each layer should implement."""
     def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
         """forward pass. Returns the output of the layer."""
-        raise NotImplementedError
+        raise NotImplementedError   
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         """backward pass. Returns the gradient with respect to the input of the layer."""
-        raise NotImplementedError
+        raise NotImplementedError   
 
 class Dense(Layer):
     """A dense (fully connected) layer in a neural network."""
@@ -71,71 +71,6 @@ class Dense(Layer):
         self.weights = self.W_opt.update(self.weights, weights_gradient)
         self.bias = self.b_opt.update(self.bias, bias_grad)
         
-        return input_gradient
-    
-class Recurrent(Layer):
-    def __init__(self, input_size:int, output_size:int, activation:Layer, last:bool=False) -> None:
-        self.input_size = input_size
-        self.output_size = output_size
-        self.activation = activation
-        self.is_last = last
-
-    def initialize(self, optimizer: Optimizer) -> None:
-        """intialize the layer parameters"""
-        limit_w = 1/np.sqrt(self.input_size)
-        limit_rw = 1/np.sqrt(self.output_size)
-
-        self.weights = np.random.uniform(-limit_w, limit_w, size=(self.input_size, self.output_size))               # weights for input state 
-        self.recurrent_weights = np.random.uniform(-limit_rw, limit_rw, size=(self.output_size, self.output_size)) # weights for previous state
-        self.bias = np.zeros((1, self.output_size))                                                               # bias
-
-        # save state of the optimizer for parameters of this layer
-        self.W_opt = copy.copy(optimizer)
-        self.RW_opt = copy.copy(optimizer)
-        self.b_opt = copy.copy(optimizer)
-
-    def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
-        """forward pass. Returns input.dot(weights_1) + prev_state.dot(weights_2) + bias"""
-        self.input = input
-        batch_size, timesteps, n_features = input.shape
-        self.timesteps = timesteps
-
-        # initialize states
-        self.outputs = np.zeros((batch_size, timesteps, self.output_size))
-        self.prev_state = np.zeros((batch_size, self.output_size)) # store output of the previous timestep
-        
-        self.successive_states = np.zeros((batch_size, timesteps+1, self.output_size)) # store all outputs
-
-        for t in range(timesteps):
-            # combine input and previous state
-            self.outputs[:, t] = self.activation.forward(np.dot(self.input[:, t], self.weights) + np.dot(self.prev_state, self.recurrent_weights) + self.bias)
-            self.prev_state = self.outputs[:, t] # save previous output
-            
-            self.successive_states[:, t+1] = self.outputs[:, t] # save all outputs
-
-        if self.is_last: return self.outputs[:, -1]
-        return self.successive_states[:, 1:] # shape: (batch_size, timesteps, output_size)
-    
-    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        print("output_gradient shape: ", output_gradient.shape)
-        
-        # calculate gradients (W, X, b)
-        W_gradient = np.matmul(self.input.T, output_gradient).sum(axis=0)
-        input_gradient = np.matmul(output_gradient, self.weights.T)
-        b_gradient = np.sum(output_gradient, axis=(0, 1), keepdims=True)
-
-        # calculate recurrent gradients (RW)
-        RW_gradient = np.zeros_like(self.recurrent_weights)
-        for t in reversed(range(self.timesteps)):
-            RW_gradient += np.dot(self.successive_states[:, t].T, output_gradient[:, t])
-            # update output gradient for the previous timestep
-            if t > 0: output_gradient[:, t-1] += np.dot(output_gradient[:, t], self.recurrent_weights.T)
-
-        # update parameters
-        self.weights = self.W_opt.update(self.weights, W_gradient)
-        self.recurrent_weights = self.RW_opt.update(self.recurrent_weights, RW_gradient)
-        self.bias = self.b_opt.update(self.bias, b_gradient)
-
         return input_gradient
 
 class Dropout(Layer):
