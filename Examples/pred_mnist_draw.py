@@ -77,6 +77,7 @@ def predict_d():
     pixels = zoom(pixels, (28 / pixels.shape[0], 28 / pixels.shape[1]))
 
     pixels = pixels.reshape(1, 784)
+    pixels = pixels.astype('float32') / 255
 
     prediction = predict(pixels)
     prediction_label.config(text=f"Prediction: {prediction}")
@@ -89,6 +90,7 @@ def predict_d_unoptimized():
     image = Image.fromarray(pixels)
     image = image.resize((28, 28)).convert('L') # Convert to grayscale
     pixels = np.array(image).reshape(1, 784)
+    pixels = pixels.astype('float32') / 255
 
     prediction = predict(pixels)
     prediction_label.config(text=f"Prediction: {prediction}")
