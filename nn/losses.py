@@ -17,7 +17,6 @@ class MSE(Loss):
 
     def grad(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         return -(y_pred - y_true)
-    
 
 class BinaryCrossEntropy(Loss):
     """Binary CrossEntropy Loss Function."""
