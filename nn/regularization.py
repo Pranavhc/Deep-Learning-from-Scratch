@@ -1,8 +1,18 @@
+# We usually add a regularization term to the loss function to prevent large weights.
+# The term includes the magnitude of the weights (the norm of weights) and a hyperparameter lambda to tweak the regularization strength.
+# By adding the magnitude of the weights to the loss function, we penalize large weights and prevent overfitting.
+
+# Here, we achieve the same effect by calculating the derivative of the regularization term w.r.t the weights and adding it to the weights' gradients.
+
+# "L1 norm" is also known as "Lasso" regularization, and "L2 norm" is known as "Ridge" regularization.
+# "L1 norm" for vectors is the Manhattan norm, and "L2 norm" is the Euclidean norm.
+# For tensors, "L2 norm" is known as the Frobenius norm. But here, we are dealing with vectors.
+
 import numpy as np
 
 class Regularization():
     """
-    Returns the derivative of regularization norm applied on weights.
+    Returns the derivative of regularization term applied on weights.
 
     regularization norms
     ---
