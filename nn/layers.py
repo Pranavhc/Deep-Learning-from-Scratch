@@ -41,20 +41,17 @@ class Dense(Layer):
         return np.dot(self.input, self.weights) + self.bias
     
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
-        """ ## backward pass
+        """ backward pass
         1. Calculates gradients of loss with respect to parameters and input.
         2. Updates parameters.
         3. Applies regularization if specified.
         4. Returns gradient with respect to input.
 
-        ### Mathematical description:
-        Backpropagation calculates the gradient of the loss function:
+        Mathematical description:
 
-            * Gradient of Weights: `∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w`
-            * Gradient of Bias: `∂L/∂b = ∂L/∂y_hat`
-            * Gradient of Input: `∂L/∂x = ∂L/∂y_hat * w`
-
-        For an activation function, multiply its derivative with the loss derivative: `output_gradient = ∂L/∂y_hat * ∂A/∂y_hat`.
+            Gradient of Weights: `∂L/∂w = ∂L/∂y_hat * ∂y_hat/∂w`
+            Gradient of Bias: `∂L/∂b = ∂L/∂y_hat`
+            Gradient of Input: `∂L/∂x = ∂L/∂y_hat * w`
         """
 
         # calculate gradients                                       # L = loss  Y = output  W = weights  X = input
@@ -73,7 +70,81 @@ class Dense(Layer):
         
         return input_gradient
 
+class RNN(Layer):
+    """ Simple RNN layer:
+    input_size: `int`
+        Number of input features.
+    hidden_size: `int`
+        Number of hidden units.
+    output_size: `int`
+        Number of output features.
+    activation: `Layer`
+        Activation function to use.
+    regularization: `Regularization` | `None`
+        Regularization to use.
+    """
+    def __init__(self, input_size:int, hidden_size:int, output_size:int, activation:Layer, regularization:Union[Regularization, None]=None) -> None:
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.activation = activation
+        self.regularization = regularization
+
+    def initialize(self, optimizer:Optimizer) -> None:
+        self.input_weights = Dense(self.input_size, self.hidden_size, self.regularization)
+        self.hidden_weights = Dense(self.hidden_size, self.hidden_size, self.regularization)
+        self.output_weights = Dense(self.hidden_size, self.output_size, self.regularization)
+
+        self.input_weights.initialize(optimizer)
+        self.hidden_weights.initialize(optimizer)
+        self.output_weights.initialize(optimizer)
+
+    def forward(self, input_sequence:np.ndarray, hidden:np.ndarray=None, train:bool=True) -> tuple[np.ndarray, np.ndarray]:
+        """ Args:
+        input_sequence: `np.ndarray`
+            Input sequence of shape (batch_size, timesteps, input_size).
+        hidden: `np.ndarray`
+            Hidden state of shape (batch_size, hidden_size).
+        train: `bool`
+            the mode of execution.
+        """
+        batch_size, timesteps, _ = input_sequence.shape
+        if hidden is None: hidden = np.zeros((batch_size, self.hidden_size))
+
+        outputs = []
+        for t in range(timesteps):
+            input_t = input_sequence[:, t, :]
+            combined_hidden_and_input = self.input_weights.forward(input_t) + self.hidden_weights.forward(hidden)
+            hidden = self.activation.forward(combined_hidden_and_input)
+            output = self.output_weights.forward(hidden)
+            outputs.append(output)
+
+        outputs = np.stack(outputs, axis=1)
+        return outputs, hidden
+
+    def backward(self, output_gradient:np.ndarray) -> np.ndarray:
+        """ Args:
+        output_gradient: `np.ndarray`   
+            Gradient of the loss w.r.t. the output of the RNN layer. Shape (batch_size, timesteps, output_size).
+        """
+        timesteps = output_gradient.shape[1]
+        grad_hidden = np.zeros((output_gradient.shape[0], self.hidden_size))
+        
+        for t in reversed(range(timesteps)):
+            grad_output = output_gradient[:, t, :]
+            grad = self.output_weights.backward(grad_output)
+            grad += grad_hidden
+            grad = self.activation.backward(grad)
+            grad_hidden = self.hidden_weights.backward(grad)
+            self.input_weights.backward(grad)
+
+        return grad_hidden
+
 class Dropout(Layer):
+    """ Dropout layer:
+    drop_rate: `float`
+        The probability of setting a neuron to zero.
+    """
     def __init__(self, drop_rate:float=0.3) -> None:
         self.drop_rate = drop_rate
         self.mask = None
