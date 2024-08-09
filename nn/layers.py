@@ -99,7 +99,7 @@ class RNN(Layer):
         self.hidden_weights.initialize(optimizer)
         self.output_weights.initialize(optimizer)
 
-    def forward(self, input_sequence:np.ndarray, hidden:np.ndarray=None, train:bool=True) -> tuple[np.ndarray, np.ndarray]:
+    def forward(self, input_sequence:np.ndarray, hidden:np.ndarray|None=None, train:bool=True) -> tuple[np.ndarray, np.ndarray]:
         """ Args:
         input_sequence: `np.ndarray`
             Input sequence of shape (batch_size, timesteps, input_size).
@@ -140,6 +140,85 @@ class RNN(Layer):
 
         return grad_hidden
 
+class CNNslow(Layer):
+    """ Convolutional layer (naive and slow):"""
+    def __init__(self, in_chnls:int, out_chnls:int, kernel_size:int, stride:int=1, padding:int=0):
+        self.in_chnls = in_chnls
+        self.out_chnls = out_chnls
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+    def initialize(self, optimizer: Optimizer) -> None:
+        limit = 1 / np.sqrt(self.kernel_size * self.kernel_size)
+        self.kernels = np.random.uniform(-limit, limit, size=(self.out_chnls, self.in_chnls, self.kernel_size, self.kernel_size))
+        self.b = np.random.uniform(-limit, limit, size=(self.out_chnls))
+
+        self.kernels_opt = copy.copy(optimizer)
+        self.b_opt = copy.copy(optimizer)
+
+    def forward(self, input:np.ndarray, train:bool=True) -> np.ndarray:
+        """ Args:
+        input: `np.ndarray`
+            Input of shape *(batch_size, channels, height, width)*.
+        train: `bool`
+            the mode of execution.
+        """
+        self.input = input
+        batch_size, in_chnls, in_height, in_width = input.shape
+
+         # new dimension after convolution = ((in_dim + 2p - k) / s) + 1
+        out_height = int((in_height + 2 * self.padding - self.kernel_size) / self.stride) + 1 
+        out_width = int((in_width + 2 * self.padding - self.kernel_size) / self.stride) + 1
+
+        out = np.zeros((batch_size, self.out_chnls, out_height, out_width))
+
+        for i in range(batch_size):             # for each img
+            for c in range(self.out_chnls):     # for each new channel
+                for h in range(out_height):     # get kernel's vertical reach
+                    h_start = h * self.stride
+                    h_end = h_start + self.kernel_size
+
+                    for w in range(out_width):  # get kernel's horizontal reach
+                        w_start = w * self.stride
+                        w_end = w_start + self.kernel_size
+
+                        # fill each pixel in the output with convolution of input and kernel
+                        out[i, c, h, w] = np.sum(input[i, :, h_start:h_end, w_start:w_end] * self.kernels[c, :,:,:]) + self.b[c]
+
+        return out
+    
+    def backward(self, output_gradient:np.ndarray) -> np.ndarray:
+        batch_size, in_chnls, in_height, in_width = self.input.shape
+        batch_size, out_chnls, out_height, out_width = output_gradient.shape
+
+        input_grad = np.zeros(self.input.shape)         # grad = conv(output_gradient, Kernels)
+        kernels_grad = np.zeros(self.kernels.shape)     # grad = conv(output_gradient, input)
+        bias_grad = np.zeros(self.b.shape)              # grad = sum(output_gradient)
+
+        for i in range(batch_size):
+            for c in range(out_chnls):
+                for h in range(out_height):
+                    h_start = h * self.stride
+                    h_end = h_start + self.kernel_size
+                    
+                    for w in range(out_width):
+                        w_start = w * self.stride
+                        w_end = w_start + self.kernel_size
+                        
+                        kernels_grad[c, :,:,:] += output_gradient[i, c, h, w] * self.input[i, :, h_start:h_end, w_start:w_end]
+                        input_grad[i, :, h_start:h_end, w_start:w_end] += output_gradient[i, c, h, w] * self.kernels[c, :,:,:]
+
+        for c in range(self.out_chnls):
+            bias_grad[c] = np.sum(output_gradient[:, c, :, :])
+
+        # update parameters
+        self.kernels = self.kernels_opt.update(self.kernels, kernels_grad)
+        self.b = self.b_opt.update(self.b, bias_grad)
+
+        return input_grad
+
+    
 class Dropout(Layer):
     """ Dropout layer:
     drop_rate: `float`
