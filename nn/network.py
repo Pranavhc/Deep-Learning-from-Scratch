@@ -68,7 +68,6 @@ class NeuralNetwork:
                     pbar.total = train_data.samples
                     pbar.bar_format = "{l_bar}{bar:20}| {n_fmt}/{total_fmt}{postfix}"
                 
-
                     train_loss, y_pred_train = self._train_on_batch(X_train, y_train)
                     train_batch_loss.append(train_loss)
                     
@@ -86,9 +85,10 @@ class NeuralNetwork:
                     val_batch_loss.append(val_loss)
                     
                     if accuracy: val_batch_acc.append(self.acc(y_pred_val, y_val))
-            
-                if accuracy: tqdm.write(f"val_accuracy={np.mean(val_batch_acc):.4f}, val_loss={np.mean(val_batch_loss):.4f} \n")
-                else: tqdm.write(f"val_loss={np.mean(val_batch_loss):.4f} \n")
+
+                if verbose is True:
+                    if accuracy: tqdm.write(f"val_accuracy={np.mean(val_batch_acc):.4f}, val_loss={np.mean(val_batch_loss):.4f} \n")
+                    else: tqdm.write(f"val_loss={np.mean(val_batch_loss):.4f} \n")
 
                 self.error['val'].append(float(np.mean(val_batch_loss)))
                 if accuracy: self.accuracy['val'].append(np.mean(val_batch_acc))
