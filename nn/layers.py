@@ -71,19 +71,20 @@ class Dense(Layer):
         return input_gradient
 
 class RNN(Layer):
-    """ Simple RNN layer:
-    input_size: `int`
-        Number of input features.
-    hidden_size: `int`
-        Number of hidden units.
-    output_size: `int`
-        Number of output features.
-    activation: `Layer`
-        Activation function to use.
-    regularization: `Regularization` | `None`
-        Regularization to use.
-    """
+    """ Simple RNN layer"""
     def __init__(self, input_size:int, hidden_size:int, output_size:int, activation:Layer, regularization:Union[Regularization, None]=None) -> None:
+        """ Args:
+        input_size: `int`
+            Number of input features.
+        hidden_size: `int`
+            Number of hidden units.
+        output_size: `int`
+            Number of output features.
+        activation: `Layer`
+            Activation function to use.
+        regularization: `Regularization` | `None`
+            Regularization to use.
+        """
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
@@ -91,6 +92,7 @@ class RNN(Layer):
         self.regularization = regularization
 
     def initialize(self, optimizer:Optimizer) -> None:
+        """intialize the layer parameters"""
         self.input_weights = Dense(self.input_size, self.hidden_size, self.regularization)
         self.hidden_weights = Dense(self.hidden_size, self.hidden_size, self.regularization)
         self.output_weights = Dense(self.hidden_size, self.output_size, self.regularization)
@@ -102,9 +104,9 @@ class RNN(Layer):
     def forward(self, input_sequence:np.ndarray, hidden:np.ndarray|None=None, train:bool=True) -> tuple[np.ndarray, np.ndarray]:
         """ Args:
         input_sequence: `np.ndarray`
-            Input sequence of shape (batch_size, timesteps, input_size).
-        hidden: `np.ndarray`
-            Hidden state of shape (batch_size, hidden_size).
+            Input sequence of shape *(batch_size, timesteps, input_size)*.
+        hidden: `np.ndarray` | `None`
+            Hidden state of shape *(batch_size, hidden_size)*.
         train: `bool`
             the mode of execution.
         """
@@ -140,10 +142,23 @@ class RNN(Layer):
 
         return grad_hidden
 
-# source: https://hackmd.io/@machine-learning/blog-post-cnnumpy-slow
 class Conv2Dslow(Layer):
-    """ Convolutional layer (naive and slow):"""
+    """ 2D Convolutional layer (slow) <br>
+    reference: [source of implementation](https://hackmd.io/@machine-learning/blog-post-cnnumpy-slow)
+    """
     def __init__(self, in_chnls:int, out_chnls:int, kernel_size:int, stride:int=1, padding:int=0):
+        """ Args:
+        in_chnls: `int`
+            Number of input channels.
+        out_chnls: `int`
+            Number of output channels.
+        kernel_size: `int`
+            Size of the kernel.
+        stride: `int`
+            Stride of the convolution.
+        padding: `int`
+            Padding of the input.
+        """
         self.in_chnls = in_chnls
         self.out_chnls = out_chnls
         self.kernel_size = kernel_size
@@ -151,6 +166,7 @@ class Conv2Dslow(Layer):
         self.padding = padding
 
     def initialize(self, optimizer: Optimizer) -> None:
+        """intialize the layer parameters"""
         limit = 1 / np.sqrt(self.kernel_size * self.kernel_size)
         self.kernels = np.random.uniform(-limit, limit, size=(self.out_chnls, self.in_chnls, self.kernel_size, self.kernel_size))
         self.b = np.random.uniform(-limit, limit, size=(self.out_chnls))
@@ -164,6 +180,8 @@ class Conv2Dslow(Layer):
             Input of shape *(batch_size, channels, height, width)*.
         train: `bool`
             the mode of execution.
+        
+        Returns: `np.ndarray`: Output of the convolutional layer
         """
         self.input = input
         batch_size, in_chnls, in_height, in_width = input.shape
@@ -216,10 +234,23 @@ class Conv2Dslow(Layer):
 
         return input_grad
 
-# source: https://hackmd.io/@machine-learning/blog-post-cnnumpy-fast
 class Conv2D(Layer):
-    """ Convolutional layer (faster than Conv2Dslow):"""
+    """ 2D Convolutional Layer <br>
+    reference: [source of implementation](https://hackmd.io/@machine-learning/blog-post-cnnumpy-fast)
+    """
     def __init__(self, in_chnls:int, out_chnls:int, kernel_size:int, stride:int=1, padding:int=0):
+        """ Args:
+        in_chnls: `int`
+            Number of input channels.
+        out_chnls: `int`
+            Number of output channels.
+        kernel_size: `int`
+            Size of the kernel.
+        stride: `int`
+            Stride of the convolution.
+        padding: `int`
+            Padding of the input.
+        """
         self.in_chnls = in_chnls
         self.out_chnls = out_chnls
         self.kernel_size = kernel_size
@@ -227,6 +258,7 @@ class Conv2D(Layer):
         self.padding = padding
 
     def initialize(self, optimizer: Optimizer) -> None:
+        """intialize the layer parameters"""
         self.kernels = np.random.randn(self.out_chnls, self.in_chnls, self.kernel_size, self.kernel_size) * np.sqrt(1. / (self.kernel_size))
         self.b = np.random.randn(self.out_chnls) * np.sqrt(1. / (self.kernel_size))
 
@@ -268,6 +300,14 @@ class Conv2D(Layer):
         return cols
 
     def forward(self, input:np.ndarray, train:bool=True) -> np.ndarray:
+        """ Args:
+        input: `np.ndarray`
+            Input of shape *(batch_size, channels, height, width)*.
+        train: `bool`
+            the mode of execution.
+        
+        Returns: `np.ndarray`: Output of the convolutional layer
+        """
         self.input = input
         batch_size, in_chnls, in_height, in_width = input.shape
 
@@ -284,13 +324,17 @@ class Conv2D(Layer):
 
         self.input_cols, self.kernel_cols = input_cols, kernel_cols # save for backward pass
         return out
+    
+    def backward(self, output_gradient:np.ndarray) -> np.ndarray:
+        pass # TODO
 
 class Dropout(Layer):
-    """ Dropout layer:
-    drop_rate: `float`
-        The probability of setting a neuron to zero.
-    """
+    """ Disables a fraction of neurons in the layer by setting them to zero. A common regularization technique."""
     def __init__(self, drop_rate:float=0.3) -> None:
+        """ Args:
+        drop_rate: `float`
+            The probability of setting a neuron to zero.
+        """
         self.drop_rate = drop_rate
         self.mask = None
 
@@ -305,6 +349,7 @@ class Dropout(Layer):
         return output_gradient * self.mask # sets gradient of the inactive neurons to zero
 
 class Flatten(Layer):
+    """Attempts to flatten the incoming n-dimensional tensor into a 2D tensor of shape *(batch_size, -1)*"""
     def __init__(self) -> None:
         self.prev_input_shape: tuple
 
@@ -316,7 +361,12 @@ class Flatten(Layer):
         return output_gradient.reshape(self.prev_input_shape)
 
 class Reshape(Layer):
+    """Attempts to reshape the input into the specified shape."""
     def __init__(self, output_shape):
+        """ Args:
+        output_shape: `tuple`
+            The desired shape (Exclude *batch size*)
+        """
         self.input_shape: tuple
         self.output_shape = output_shape
 
