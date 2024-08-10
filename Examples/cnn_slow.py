@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from nn.network import NeuralNetwork
 from nn.optim import Adam
 from nn.losses import CategoricalCrossEntropy as CCE
-from nn.layers import CNNslow, Dense, Flatten
+from nn.layers import Conv2Dslow, Dense, Flatten
 from nn.activations import ReLu, Softmax
 from nn.utils import DataLoader, to_categorical1D, shuffler, save_object, load_object
 
@@ -41,11 +41,11 @@ batch_size=128
 
 # very small model considering the unoptimized CNN and runtime being CPU
 clf = NeuralNetwork(Adam(), CCE(), [
-    CNNslow(in_chnls=n_channels, out_chnls=3, kernel_size=3, stride=2),   # (1, 28, 28) -> (3, 13, 13) 
+    Conv2Dslow(in_chnls=n_channels, out_chnls=3, kernel_size=3, stride=2),  # (1, 28, 28) -> (3, 13, 13) 
     ReLu(),
-    CNNslow(in_chnls=3, out_chnls=6, kernel_size=3, stride=2),            # (3, 13, 13) -> (6, 6, 6)
+    Conv2Dslow(in_chnls=3, out_chnls=6, kernel_size=3, stride=2),           # (3, 13, 13) -> (6, 6, 6)
     ReLu(),
-    Flatten(),                                                            # (6, 6, 6)   -> (6*6*6)
+    Flatten(),                                                              # (6, 6, 6)  -> (6*6*6)
     Dense(6*6*6, 10),
     Softmax()
 ])
