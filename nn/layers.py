@@ -1,6 +1,7 @@
 import copy
 import numpy as np
 
+import nn.utils as utils
 from .optim import Optimizer
 from .regularization import Regularization
 from typing import Union
@@ -265,40 +266,6 @@ class Conv2D(Layer):
         self.kernels_opt = copy.copy(optimizer)
         self.b_opt = copy.copy(optimizer)
 
-    def __get_indices(self, input_shape, kernel_height:int, kernel_width:int, stride:int, padding:int):
-        """Returns the indices of the input that will be multiplied by the kernel."""
-        batch_size, in_chnls, in_height, in_width = input_shape
-
-        # new dimension after convolution = ((in_dim + 2p - k) / s) + 1
-        out_height = int((in_height + 2 * padding - kernel_height) / stride) + 1
-        out_width = int((in_width + 2 * padding - kernel_width) / stride) + 1
-
-        #### compute matrix of index i
-        level1 = np.repeat(np.arange(kernel_height), kernel_width) # level 1 vector
-        level1 = np.tile(level1, in_chnls) # stack level 1 vectors for each input channel
-        # create a vector with an increase by 1 at each level.
-        increasing_levels = stride * np.repeat(np.arange(out_height), out_width)
-        i = level1.reshape(-1, 1) + increasing_levels.reshape(1, -1) # reshape both accordingly to get a matrix
-
-        #### compute matrix of index j
-        slide1 = np.tile(np.arange(kernel_width), kernel_height)
-        slide1 = np.tile(slide1, in_chnls)
-        increasing_slides = stride * np.tile(np.arange(out_width), out_height)
-        j = slide1.reshape(-1, 1) + increasing_slides.reshape(1, -1) # reshape both accordingly to get a matrix
-
-        chnl_delimitation = np.repeat(np.arange(in_chnls), kernel_height * kernel_width).reshape(-1, 1)
-
-        return i, j, chnl_delimitation
-    
-    def __img2col(self, input:np.ndarray, kernel_height:int, kernel_width:int, stride:int, padding:int):
-        # padding
-        input_padded = np.pad(input, ((0,0), (0,0), (padding, padding), (padding, padding)), mode='constant')
-        i, j, d = self.__get_indices(input.shape, kernel_height, kernel_width, stride, padding)
-
-        cols = input_padded[:, d, i, j]
-        cols = np.concatenate(cols, axis=-1)
-        return cols
-
     def forward(self, input:np.ndarray, train:bool=True) -> np.ndarray:
         """ Args:
         input: `np.ndarray`
@@ -314,19 +281,36 @@ class Conv2D(Layer):
         out_height = int((in_height + 2 * self.padding - self.kernel_size) / self.stride) + 1
         out_width = int((in_width + 2 * self.padding - self.kernel_size) / self.stride) + 1
 
-        input_cols = self.__img2col(input, self.kernel_size, self.kernel_size, self.stride, self.padding)
+        input_cols = utils.img2col(input, self.kernel_size, self.kernel_size, self.stride, self.padding)
         kernel_cols = self.kernels.reshape((self.out_chnls, -1))
         b_col = self.b.reshape(-1, 1)
 
+        # forward calculation & then reshape that matrix back to image
         out = kernel_cols @ input_cols + b_col
-        # reshape matrix back to image
-        out = np.array(np.hsplit(out, batch_size)).reshape(batch_size, self.out_chnls, out_height, out_width)
+        out = np.array(np.hsplit(out, batch_size)).reshape((batch_size, self.out_chnls, out_height, out_width))
 
         self.input_cols, self.kernel_cols = input_cols, kernel_cols # save for backward pass
         return out
     
     def backward(self, output_gradient:np.ndarray) -> np.ndarray:
-        pass # TODO
+        input, input_cols, kernel_cols = self.input, self.input_cols, self.kernels
+        batch_size, _, _, _ = input.shape
+
+        out_grad = output_gradient.reshape(output_gradient.shape[0] * output_gradient.shape[1], output_gradient.shape[2] * output_gradient.shape[3])
+        out_grad = np.array(np.vsplit(out_grad, batch_size))
+        out_grad = np.concatenate(out_grad, axis=-1)
+
+        input_grad_col = kernel_cols.T @ out_grad
+        kernel_grad_col = out_grad @ input_cols.T
+
+        input_grad = utils.col2img(input_grad_col, input.shape, self.kernel_size, self.kernel_size, self.stride, self.padding)
+        kernel_grad = kernel_grad_col.reshape((kernel_cols.shape[0], self.in_chnls, self.kernel_size, self.kernel_size))
+        self.b_grad = np.sum(output_gradient, axis=(0, 2, 3))
+
+        self.kernels = self.kernels_opt.update(self.kernels, kernel_grad)
+        self.b = self.b_opt.update(self.b, self.b_grad)
+
+        return input_grad
 
 class Dropout(Layer):
     """ Disables a fraction of neurons in the layer by setting them to zero. A common regularization technique."""
