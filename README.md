@@ -10,7 +10,7 @@ from nn.losses import CategoricalCrossEntropy as CCE
 from nn.layers import Dense, Dropout
 from nn.regularization import Regularization as Rglr
 from nn.activations import ReLu, Softmax
-from nn.utils import DataLoader, save_object, load_object
+from nn.utils import DataLoader
 
 layers = [
     Dense(784, 128, Rglr('L2', 0.1)), 
