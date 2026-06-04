@@ -59,6 +59,11 @@ class Dense(Layer):
         weights_gradient = np.dot(self.input.T, output_gradient)    # ∂L/dW = ∂L/dY * ∂Y/∂W = output_gradient * input
         bias_grad = np.sum(output_gradient, axis=0, keepdims=True)  # ∂L/db = ∂L/dY * ∂Y/∂b = output_gradient
         
+        # About he input_gradient:
+        # during the forward pass, the input X gets transformed to Y over and over again by the weights
+        # When going backwards, at the output layer of the network we find the gradient of the loss using the Y and Y_hat directly.
+        # Then at it's previous layer, we find the gradient of the loss using the Y and Y_hat_prev (which is basically input to the current layer)
+        # same goes for all the earlier layers. The following line adjusts the incoming gradient of the loss achieving our goal.
         input_gradient = np.dot(output_gradient, self.weights.T)    # ∂L/dX = ∂L/dY * ∂Y/∂X = output_gradient * weights
         
         # regularization
@@ -331,6 +336,95 @@ class Dropout(Layer):
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return output_gradient * self.mask # sets gradient of the inactive neurons to zero
+    
+class BatchNorm(Layer):
+    def __init__(self, momentum:float=0.9, eps:float=0.01) -> None:
+        self.momentum = momentum
+        self.eps = eps
+        self.running_mean = None
+        self.running_var = None
+
+        self.gamma = None  # Scale parameter
+        self.beta = None   # Shift parameter
+        self.initialized = False
+
+    def initialize(self, optimizer: Optimizer) -> None:
+        self.gamma_opt = copy.copy(optimizer)
+        self.beta_opt = copy.copy(optimizer)
+
+    def forward(self, input: np.ndarray, train: bool = True) -> np.ndarray:
+        # Lazy initialization of batchnorm params on first forward pass
+        if not self.initialized:
+            self._initialize_parameters(input.shape)
+            self.initialized = True
+        
+        # Calculate batch statistics or use running statistics
+        if train:
+            # Calculate mean and variance along batch dimension (axis=0)
+            batch_mean = np.mean(input, axis=0)
+            batch_var = np.var(input, axis=0)
+            
+            # Update running statistics
+            if self.running_mean is None:
+                self.running_mean = batch_mean
+                self.running_var = batch_var
+            else:
+                self.running_mean = self.momentum * self.running_mean + (1 - self.momentum) * batch_mean
+                self.running_var = self.momentum * self.running_var + (1 - self.momentum) * batch_var
+            
+            # Use batch statistics for normalization
+            mean = batch_mean
+            var = batch_var
+        else:
+            # Use running statistics during inference
+            mean = self.running_mean
+            var = self.running_var
+        
+        # Store values needed for backward pass
+        self.input = input
+        self.mean = mean
+        self.var = var
+        self.x_centered = input - mean
+        self.std_inv = 1.0 / np.sqrt(var + self.eps)
+        
+        # Normalize input
+        x_normalized = self.x_centered * self.std_inv
+        
+        # Scale and shift
+        output = self.gamma * x_normalized + self.beta
+        
+        return output
+    
+    def _initialize_parameters(self, input_shape: tuple) -> None:
+        """Initialize gamma and beta parameters based on input shape"""
+        # For batch norm, we normalize along all dimensions except the batch dimension
+        # So parameters have shape of all dimensions except the first (batch) dimension
+        param_shape = input_shape[1:]  # Remove batch dimension
+        
+        self.gamma = np.ones(param_shape)   # Scale parameter (initialized to 1)
+        self.beta = np.zeros(param_shape)   # Shift parameter (initialized to 0)
+
+    def backward(self, output_gradient: np.ndarray) -> np.ndarray:
+        batch_size = output_gradient.shape[0]
+        
+        # Gradients for gamma and beta
+        x_normalized = self.x_centered * self.std_inv
+        gamma_grad = np.sum(output_gradient * x_normalized, axis=0)
+        beta_grad = np.sum(output_gradient, axis=0)
+        
+        # Update gamma and beta
+        self.gamma = self.gamma_opt.update(self.gamma, gamma_grad)
+        self.beta = self.beta_opt.update(self.beta, beta_grad)
+        
+        # Gradient with respect to input
+        # This is the complex part of batch norm backward pass
+        dx_normalized = output_gradient * self.gamma
+        dvar = np.sum(dx_normalized * self.x_centered, axis=0) * (-0.5) * (self.std_inv ** 3)
+        dmean = np.sum(dx_normalized * (-self.std_inv), axis=0) + dvar * np.mean(-2.0 * self.x_centered, axis=0)
+        
+        input_gradient = (dx_normalized * self.std_inv) + (dvar * 2.0 * self.x_centered / batch_size) + (dmean / batch_size)
+        
+        return input_gradient
 
 class Flatten(Layer):
     """Attempts to flatten the incoming n-dimensional tensor into a 2D tensor of shape *(batch_size, -1)*"""
@@ -339,7 +433,7 @@ class Flatten(Layer):
 
     def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:
         self.prev_input_shape = input.shape
-        return input.reshape(input.shape[0], -1)
+        return input.reshape(input.shape[0], -1) 
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         return output_gradient.reshape(self.prev_input_shape)
