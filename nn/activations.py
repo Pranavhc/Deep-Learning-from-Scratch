@@ -1,6 +1,7 @@
 import numpy as np
 from .layers import Layer
 
+
 class ReLu(Layer):
   """ Rectified Linear Unit (ReLU) activation function. """
   def forward(self, input: np.ndarray, train:bool=True) -> np.ndarray:

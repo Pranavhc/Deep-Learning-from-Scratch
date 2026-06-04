@@ -20,7 +20,7 @@ class SGD(Optimizer):
 
     def update(self, parameters: np.ndarray, parameters_grad: np.ndarray) -> np.ndarray:
         if self.velocity is None: self.velocity = np.zeros(np.shape(parameters))
-
+          
         self.velocity = self.momentum * self.velocity + (1 - self.momentum) * parameters_grad
         return parameters - self.learning_rate * self.velocity
 
